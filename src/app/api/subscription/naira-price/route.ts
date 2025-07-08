@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "src/lib/zipha_bot/config/connection";
-import { Settings} from "src/lib/zipha_bot/controllers/callback_handlers/settings/settingsClass";
-import settingsModel from "src/lib/zipha_bot/models/settings.model";
+import { connectDB } from "../../../../../server/bot/config/connection";
+import { settingsClass } from "../../../../../server/bot/controllers/callback_handlers/settings/settingsClass";
+import settingsModel from "../../../../../server/bot/models/settings.model";
 
 export async function GET(req: NextRequest) {
   try {
     await connectDB(); // ✅ Ensure DB connection before anything else
-    const nairaPrice = await Settings.getNairaPriceByUserId(process.env.USER_ID!);
+    const nairaPrice = await settingsClass().getSettings();
 
     return NextResponse.json({
       message: "Fetched Naira and VIP prices",
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       updateDoc,
       { new: true, upsert: true }
     );
-    return NextResponse.json({ success: true, settings: updated?.settings });
+    return NextResponse.json({ success: true, settings: (updated as any)?.settings });
   } catch (err: any) {
     console.error("Update failed:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

@@ -4,7 +4,7 @@ import { memo, FC } from "react";
 import Link from "next/link";
 import { MdArrowBackIos } from "react-icons/md";
 import Header from "src/components/Header";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/app/context/ThemeContext";
 
 
 interface ToggleSwitchProps {

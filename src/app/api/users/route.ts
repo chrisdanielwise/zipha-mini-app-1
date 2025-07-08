@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-// import { UserInfo } from "src/lib/zipha_bot/models/userManagementClass";
-import { connectDB } from "src/lib/zipha_bot/config/connection";
-import userModel from "src/lib/zipha_bot/models/user.model";
+// import { UserInfo } from "../../../../server/bot/models/userManagementClass";
+import { connectDB } from "../../../../server/bot/config/connection";
+import userModel from "../../../../server/bot/models/schemas/user.model";
 
 export async function GET() {
   try {

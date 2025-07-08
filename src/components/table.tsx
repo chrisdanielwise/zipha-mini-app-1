@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import * as React from "react";
+import { useState, useMemo } from "react";
 import usePagination from "../hooks/usePagination";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
@@ -10,7 +11,7 @@ export interface Column {
 export interface GenericTableProps<T> {
   columns: Column[];
   data: T[];
-  renderCell: (row: T) => JSX.Element[];
+  renderCell: (row: T) => React.ReactElement[];
   itemsPerPage: number;
 }
 

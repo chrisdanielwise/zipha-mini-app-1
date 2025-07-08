@@ -1,8 +1,8 @@
 // /app/api/update-fee/route.ts
 
 import { NextResponse } from "next/server";
-import { connectDB } from "src/lib/zipha_bot/config/connection";
-import {  settingsClass } from "src/lib/zipha_bot/controllers/callback_handlers/settings/settingsClass";
+import { connectDB } from "../../../../../server/bot/config/connection";
+import {  settingsClass } from "../../../../../server/bot/controllers/callback_handlers/settings/settingsClass";
 
 
 export async function POST(req: Request) {

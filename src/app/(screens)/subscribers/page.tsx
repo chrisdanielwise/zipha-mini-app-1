@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useEffect, useState, useMemo, memo } from "react";
 import Header from "../../../components/Header";
 import dynamic from "next/dynamic";
@@ -9,7 +10,7 @@ import Link from "next/link";
 
 const GenericTable = dynamic(() => import("../../../components/table"), {
   ssr: false,
-}) as <T>(props: import("../../../components/table").GenericTableProps<T>) => JSX.Element;
+}) as <T>(props: import("../../../components/table").GenericTableProps<T>) => React.ReactElement;
 
 interface UserData {
   id: number;
@@ -22,16 +23,13 @@ interface UserData {
   payment: string;
 }
  interface RawUser {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   username?: string;
-  subscription?: {
-    type?: string;
-    status?: string;
-    expirationDate?: number;
-  };
-  paymentType?: string;
+  subscriptionStatus?: string;
+  subscriptionType?: string;
+  expirationDate?: number;
   createdAt?: string;
-  amount?: number;
   [key: string]: any;
 }
 
@@ -45,38 +43,38 @@ const Subscribers = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const itemsPerPage = 7;
-  async function getAllUsers(): Promise<RawUser[] | null> {
+  async function getSubscribers(): Promise<RawUser[] | null> {
     try {
-      const res = await fetch("/api/users");
+      const res = await fetch("/api/subscribers");
       const data = await res.json();
-      return data.success ? data.users : null;
+      return data.success ? data.subscribers : null;
     } catch (err) {
-      console.error("Error fetching users:", err);
+      console.error("Error fetching subscribers:", err);
       return null;
     }
   }
   useEffect(() => {
-    const fetchUsers = async () => {
-      const users = await getAllUsers();
-      if (!users) return;
+    const fetchSubscribers = async () => {
+      const subscribers = await getSubscribers();
+      if (!subscribers) return;
 
-      const formatted: UserData[] = users.map((user, index) => ({
+      const formatted: UserData[] = subscribers.map((user, index) => ({
         id: index + 1,
         name: user.fullName || "No name",
         username: user.username || "No username",
-        amount: user.amount ? `$${user.amount}` : "$0",
+        amount: "$0", // or use a real amount if you have it
         service: user.subscription?.type || "None",
         status: user.subscription?.status || "Unknown",
         date: user.createdAt
           ? new Date(user.createdAt).toLocaleDateString("en-GB")
           : "N/A",
-        payment: user.paymentType || "Unknown",
+        payment: "Unknown", // or use a real payment field if you have it
       }));
 
       setData(formatted);
     };
 
-    fetchUsers();
+    fetchSubscribers();
   }, []);
 
   const filteredData = useMemo(() => {

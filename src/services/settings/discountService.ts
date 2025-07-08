@@ -1,6 +1,6 @@
 // /services/settings/discountService.ts
 
-import { settingsClass } from "src/lib/zipha_bot/controllers/callback_handlers/settings/settingsClass";
+import { settingsClass } from "../../../server/bot/controllers/callback_handlers/settings/settingsClass";
 //Bot function
 export async function applyVipDiscount(discount: number) {
   const settings = settingsClass();

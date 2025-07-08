@@ -16,7 +16,7 @@ export async function handleVipDiscountChange(ctx: Context): Promise<void> {
 
   if (callbackFn === "vip_reset_all") {
     await resetVipDiscount();
-    return ctx.answerCallbackQuery({
+    ctx.answerCallbackQuery({
       text: `Prices reset!`,
       show_alert: true,
     });
@@ -25,7 +25,7 @@ export async function handleVipDiscountChange(ctx: Context): Promise<void> {
   if (discounts[callbackFn]) {
     const discount = discounts[callbackFn];
     await applyVipDiscount(discount);
-    return ctx.answerCallbackQuery({
+    ctx.answerCallbackQuery({
       text: `Discount applied: ${discount * 100}% now activated!`,
       show_alert: true,
     });

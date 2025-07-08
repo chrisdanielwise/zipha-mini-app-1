@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, memo } from "react";
 import Image from "next/image";
-import dp from "@/Assets/dp1.jpeg";
+import dp from "@/app/Assets/dp1.jpeg";
 import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
 import Header from "src/components/Header";
 import GenericTable from "src/components/table";
@@ -51,8 +51,11 @@ const UserProfile = () => {
   }, [data, filterStatus]);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.Telegram?.WebApp?.expand) {
-      window.Telegram.WebApp.expand(); // Ensure full-screen view
+    if (
+      typeof window !== "undefined" &&
+      (window.Telegram?.WebApp && (window.Telegram.WebApp as any).expand)
+    ) {
+      (window.Telegram.WebApp as any).expand(); // Ensure full-screen view
     }
   }, []);
 

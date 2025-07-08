@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { memo } from "react";
 import Header from "../../../components/Header";
 import Link from "next/link";
@@ -13,7 +14,7 @@ import { GiUnplugged } from "react-icons/gi";
 interface LinkProps {
     href: string;
     label: string;
-    icon: JSX.Element;
+    icon: React.ReactElement;
 }
 
 const Settings = () => {

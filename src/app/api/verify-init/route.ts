@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import verifyTelegramInitData from 'src/lib/zipha_bot/config/verifyTelegramInitialData';
+import verifyTelegramInitData from '../../../../server/bot/config/verifyTelegramInitialData';
 
 
 export async function POST(request: Request) {

@@ -1,6 +1,6 @@
 "use client";  
 
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/app/context/AuthContext";
 import { useState, memo } from "react";  
 
 const GiftCoupon = () => {  
@@ -86,7 +86,7 @@ const GiftCoupon = () => {
         }
       
         const adminUserId = Number(process.env.NEXT_PUBLIC_USER_ID); // Or pass it as prop/state
-        await generateCoupon(selected, adminUserId,user?.id);
+        await generateCoupon(selected, adminUserId, user?.id ?? 0);
       };
       
     const closeModal = () => {  

@@ -7,7 +7,6 @@ import { IoIosArrowDown } from "react-icons/io";
 const Settings = () => {
   const [drop, setDrop] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const options = ["King FTP", "Greysuit FX", "All Merchants"];
   const [selectedOption, setSelectedOption] = useState("All Merchants");
   const [modalOpen, setModalOpen] = useState(false);
   const [merchantName, setMerchantName] = useState("");
@@ -16,10 +15,11 @@ const Settings = () => {
 
   // Memoize filtered options
   const filteredOptions = useMemo(() => {
+    const options = ["King FTP", "Greysuit FX", "All Merchants"];
     return options.filter(option =>
       option.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm, options]);
+  }, [searchTerm]);
 
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

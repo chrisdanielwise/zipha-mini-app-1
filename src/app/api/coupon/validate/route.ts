@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-import { Greybot } from "src/lib/zipha_bot/config/setWebhook";
-import { generateCaption, retryApiCall } from "src/lib/zipha_bot/config/utilities";
-import screenshotStorage from "src/lib/zipha_bot/controllers/navigation/screenshotStorageClass";
-import CatchMechanismClass from "src/lib/zipha_bot/models/catchMechanismClass";
-import Coupon from "src/lib/zipha_bot/models/couponClass";
-import settingsModel from "src/lib/zipha_bot/models/settings.model";
-import { createUserInstance } from "src/lib/zipha_bot/models/userInfoSingleton";
+import { Greybot } from "../../../../../server/bot/config/setWebhook";
+import { generateCaption, retryApiCall } from "../../../../../server/bot/config/utilities";
+import screenshotStorage from "../../../../../server/bot/controllers/navigation/screenshotStorageClass";
+import CatchMechanismClass from "../../../../../server/bot/models/catchMechanismClass";
+import Coupon from "../../../../../server/bot/models/couponClass";
+import settingsModel from "../../../../../server/bot/models/settings.model";
+import { userInfoSingletonInstance } from "../../../../../server/bot/models/userInfoSingleton";
 
  // Replace with your actual bot instance
  const couponInstance = Coupon.getInstance();
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, message: "Coupon code does not exist." });
     }
 
-    const coupon = settingsDoc.settings.codeGeneration.find(
+    const coupon = (settingsDoc as any).settings.codeGeneration.find(
       (c: { couponCode: string }) => c.couponCode === couponCode
     );
 
@@ -49,17 +49,17 @@ export async function POST(req: NextRequest) {
 
     const serviceOption =
       coupon.options?.length > 1
-        ? coupon.options.map((opt) => `\t${opt.text}`).join("\n")
+        ? coupon.options.map((opt: any) => `\t${opt.text}`).join("\n")
         : coupon.options?.[0]?.text ?? "No service options available.";
 
     // 2. Save user info
-    createUserInstance.setUserProperties(userId, username, {
+    userInfoSingletonInstance.setUserProperties(userId, username, {
       from: { id: userId, username },
       chat: { id: chatId },
     } as any); // ⛔ adapt this shape if needed
-    createUserInstance.subscriptionStatus("inactive");
+    userInfoSingletonInstance.subscriptionStatus("inactive");
 
-    await createUserInstance.saveUserToDB();
+    await userInfoSingletonInstance.saveUserToDB();
 
     // 3. Screenshot data
     const screenshotData = {
@@ -72,11 +72,7 @@ export async function POST(req: NextRequest) {
 
     // 4. Send to approval channel
     const caption = generateCaption(
-      { from: { id: userId, username } } as any,
-      serviceOption,
-      null,
-      null,
-      "Free"
+      { from: { id: userId, username }, serviceOption, paymentOption: null, paymentType: null, type: "Free" }
     );
 
     const channelId = process.env.APPROVAL_CHANNEL_ID as string;
@@ -123,3 +119,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+

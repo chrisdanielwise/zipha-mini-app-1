@@ -3,7 +3,7 @@
 import { useState, memo, useEffect } from "react";
 import Header from "../../../components/Header";
 import GiftCoupon from "../../../components/GiftCoupon";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/app/context/AuthContext";
 /**
  * Action page – lets an admin:
  *  • pick discount levels
@@ -113,7 +113,7 @@ const Action = () => {
 
   /* ───────────────────────── Action handlers ──────────────────────────── */
 
-  /** Called when the “Save” button beside the rate input is pressed */
+  /** Called when the "Save" button beside the rate input is pressed */
   const handleSaveRate = async () => {
     const value:number = parseFloat(inputRate);
     if (isNaN(value)) {

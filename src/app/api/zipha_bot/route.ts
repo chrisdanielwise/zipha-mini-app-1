@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimiterMiddleware } from "src/lib/zipha_bot/config/rateLimiter";
-import { Greybot } from "src/lib/zipha_bot/config/setWebhook";
-import { initializeGreybot } from "src/lib/zipha_bot/config/initBot";
+import { rateLimiterMiddleware } from "../../../../server/bot/config/rateLimiter";
+import { Greybot } from "../../../../server/bot/config/setWebhook";
+import { initializeGreybot } from "../../../../server/bot/config/initBot";
 import axios from "axios";
 
 

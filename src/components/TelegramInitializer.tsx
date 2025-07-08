@@ -3,7 +3,7 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext';
 
 
 interface TelegramInitializerProps {
@@ -45,6 +45,12 @@ const TelegramInitializer = ({ children }: TelegramInitializerProps) => {
         }
 
         if (!initData) {
+          // In development, allow without initData
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔧 Development mode: Skipping initData verification');
+            setVerified(true);
+            return;
+          }
           setError('initData not found. Please open this app from Telegram.');
           console.error('❌ initData not found');
           return;

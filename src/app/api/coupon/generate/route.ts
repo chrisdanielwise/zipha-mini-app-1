@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Coupon from "src/lib/zipha_bot/models/couponClass";
-import settingsModel from "src/lib/zipha_bot/models/settings.model";
+import Coupon from "../../../../../server/bot/models/couponClass";
+import settingsModel from "../../../../../server/bot/models/settings.model";
 
 const couponInstance = Coupon.getInstance();
 
