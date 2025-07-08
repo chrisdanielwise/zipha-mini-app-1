@@ -12,7 +12,7 @@ let db: Db;
 
 async function connectDB() {
   if (!client) {
-    client = new MongoClient(process.env.DB_CONNECT!);
+    client = new MongoClient(process.env.MONGODB_URI!);
     await client.connect();
     db = client.db("rate-limiter");
   }

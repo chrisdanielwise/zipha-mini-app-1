@@ -14,7 +14,7 @@ export async function connectDB(): Promise<{ client: typeof mongoose; db: typeof
     return { client: mongoose, db: mongoose.connection }; // Already connected
   }
 
-  await mongoose.connect(process.env.DB_CONNECT as string, {
+  await mongoose.connect(process.env.MONGODB_URI as string, {
     autoIndex: false,
     bufferCommands: false,
     serverSelectionTimeoutMS: 50000,
