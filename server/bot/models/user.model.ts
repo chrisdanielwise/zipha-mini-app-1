@@ -32,6 +32,5 @@ const userSchema = new mongoose.Schema<UserDocument>({
   timestamps: true
 });
 
-const UserModel = mongoose.model<UserDocument>("telegram-bot-users", userSchema);
-
+const UserModel = mongoose.models['telegram-bot-users'] || mongoose.model<UserDocument>("telegram-bot-users", userSchema);
 export default UserModel; 
