@@ -26,6 +26,6 @@ const catchMechanismSchema = new mongoose.Schema<CatchMechanismDocument>({
   timestamps: true
 });
 
-const CatchMechanism = mongoose.model<CatchMechanismDocument>("CatchMechanism", catchMechanismSchema);
 
+const CatchMechanism = mongoose.models.CatchMechanism || mongoose.model<CatchMechanismDocument>("CatchMechanism", catchMechanismSchema);
 export default CatchMechanism; 
