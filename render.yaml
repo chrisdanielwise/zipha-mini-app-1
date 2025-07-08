@@ -1,0 +1,20 @@
+
+services:
+- name: test-service
+  type: web_service
+  runtime: node
+  plan: starter
+  region: oregon
+  repo: https://github.com/ziphatech/zipha_demo_bot.git
+  branch: master
+  startCommand: npm start
+  autoDeploy: "yes"
+  serviceDetails:
+    pullRequestPreviewsEnabled: "no"
+    previews:
+      generation: "off"
+    plan: starter 
+    envSpecificDetails:
+      buildCommand: npm install
+      startCommand: "npx pm2 kill && npx pm2 reset all && npx pm2 start ecosystem.config.js --no-daemon"
+    runtime: node
