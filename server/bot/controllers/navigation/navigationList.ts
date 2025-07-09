@@ -1,7 +1,23 @@
+import { Navigation } from "./navigationClass";
+import { handleUsdtPay } from "../callback_handlers/menuButtonsCallback/payment/handleUsdtPay";
+import { handleNairaPay } from "../callback_handlers/menuButtonsCallback/payment/handleNairaPay";
+import { handleBtcPay } from "../callback_handlers/menuButtonsCallback/payment/handleBtcPay";
+import { handleEthereumPay } from "../callback_handlers/menuButtonsCallback/payment/handleEthereumPay";
+import { handleSkrillPay } from "../callback_handlers/menuButtonsCallback/payment/handleSkrillPay";
+import { generateCouponHandler } from "../callback_handlers/settings/generateCouponHandler";
+import { handleSettingsChange } from "../callback_handlers/settings/handleSettingsChange";
 import { Context } from "grammy";
+import Coupon from "../../models/couponClass";
+import { getSubscriptionStatus } from "../callback_handlers/channelHandlers/handleSubscription/checkSubscriptionStatus";
+import { handleFAQText } from "../callback_handlers/menuButtonsCallback/payment/handleFAQText";
+import { handleBankTransfer } from "../callback_handlers/menuButtonsCallback/payment/handleBankTransfer";
+
+
+const navigation = Navigation.getInstance();
+const couponInstance = Coupon.getInstance();
 
 interface NavigationMapEntry {
-  navigation: string | ((ctx: Context) => void | Promise<void> | string);
+  navigation: string | ((ctx: Context) => void | Promise<void> |string);
   callback: ((ctx: Context, ...args: any[]) => Promise<void>) | null;
 }
 
@@ -11,7 +27,7 @@ export const navigationMap = (
   userId: number,
   data: any
 ): { [key: string]: NavigationMapEntry } => {
-  const { oneMonth, threeMonths, sixMonths, oneYear } = data?.vipDiscountPrice || {};
+  const { oneMonth, threeMonths, sixMonths, oneYear } = data?.vipDiscountPrice;
 
   return {
     "vip_signal": {
@@ -67,19 +83,19 @@ export const navigationMap = (
       callback: null,
     },
     "one_month": {
-      navigation: `1 Month - $${oneMonth || 99}`,
+      navigation: `1 Month - $${oneMonth}`,
       callback: null,
     },
     "three_months": {
-      navigation: `3 Months - $${threeMonths || 299}`,
+      navigation: `3 Months - $${threeMonths}`,
       callback: null,
     },
     "six_months": {
-      navigation: `6 Months - $${sixMonths || 599}`,
+      navigation: `6 Months - $${sixMonths}`,
       callback: null,
     },
     "twelve_months": {
-      navigation: `12 Months - $${oneYear || 999}`,
+      navigation: `12 Months - $${oneYear}`,
       callback: null,
     },
     "agree_one": {
@@ -92,27 +108,27 @@ export const navigationMap = (
     },
     "usdt": {
       navigation: "USDT",
-      callback: null,
+      callback: handleUsdtPay,
     },
     "naira": {
       navigation: "Naira Payment",
-      callback: null,
+      callback: handleNairaPay,
     },
     "btc": {
       navigation: "BTC",
-      callback: null,
+      callback: handleBtcPay,
     },
     "erc": {
       navigation: "Ethereum Payment",
-      callback: null,
+      callback: handleEthereumPay,
     },
     "skrill": {
       navigation: "Skrill Payment",
-      callback: null,
+      callback: handleSkrillPay,
     },
     "check_subscription_status": {
       navigation: "Check Subscription Status",
-      callback: null,
+      callback: getSubscriptionStatus,
     },
     "gift_coupon": {
       navigation: "Gift Coupon",
@@ -120,29 +136,32 @@ export const navigationMap = (
     },
     "generate_coupon": {
       navigation: "Generate Coupon",
-      callback: null,
+      callback: generateCouponHandler,
     },
     "faq": {
       navigation: (ctx: Context): string => {
+        navigation.setFAQIndex(userId, 0);
         return "FAQ";
       },
-      callback: null,
+      callback: handleFAQText,
     },
     "next_faq": {
       navigation: (ctx: Context): string => {
-        return "next_0";
+        const currentIndex = navigation.getFAQIndex(userId);
+        return `next_${currentIndex}`;
       },
-      callback: null,
+      callback: handleFAQText,
     },
     "prev_faq": {
       navigation: (ctx: Context): string => {
-        return "prev_0";
+        const currentIndex = navigation.getFAQIndex(userId);
+        return `prev_${currentIndex}`;
       },
-      callback: null,
+      callback: handleFAQText,
     },
     "foreign_payment": {
       navigation: "Foreign Payment",
-      callback: null,
+      callback: handleBankTransfer,
     },
     "settings": {
       navigation: "Settings",
@@ -150,51 +169,27 @@ export const navigationMap = (
     },
     "nairaPrice": {
       navigation: "nairaprice",
-      callback: null,
+      callback: handleSettingsChange,
     },
     "vipDiscountPrice": {
       navigation: "Vip Discount Price",
-      callback: null,
+      callback: handleSettingsChange,
     },
     "vipPrice": {
       navigation: "Vip Prices",
-      callback: null,
+      callback: handleSettingsChange,
     },
     "generate_code": {
       navigation: "Generate Code",
-      callback: null,
+      callback: couponInstance.generateCoupon.bind(couponInstance),
     },
     "goback": {
-      navigation: "goBack",
+      navigation: navigation.goBack.bind(navigation),
       callback: null,
     },
     "mainmenu": {
-      navigation: "mainMenu",
+      navigation: navigation.goToMainMenu.bind(navigation),
       callback: null,
     },
   };
 };
-
-export const navigationOptions = {
-  // Navigation options configuration
-  home: {
-    label: "Home",
-    action: "navigate_home"
-  },
-  settings: {
-    label: "Settings",
-    action: "navigate_settings"
-  },
-  payment: {
-    label: "Payment",
-    action: "navigate_payment"
-  },
-  subscription: {
-    label: "Subscription",
-    action: "navigate_subscription"
-  },
-  support: {
-    label: "Support",
-    action: "navigate_support"
-  }
-}; 

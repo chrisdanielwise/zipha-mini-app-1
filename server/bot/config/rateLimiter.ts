@@ -9,7 +9,6 @@ const keyPrefix = "telegram-api-rate-limit";
 // ✅ Persistent MongoDB Client to avoid closing after every request
 let client: MongoClient;
 let db: Db;
-
 async function connectDB() {
   if (!client) {
     client = new MongoClient(process.env.DB_CONNECT!);
@@ -42,4 +41,4 @@ export async function rateLimiterMiddleware(req: NextRequest): Promise<NextRespo
     console.error("Rate limiter error:", error);
     return new NextResponse("Too many requests", { status: 429 });
   }
-} 
+}

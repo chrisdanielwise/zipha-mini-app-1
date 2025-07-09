@@ -36,7 +36,7 @@ const vipSignalDiscount: InlineButton[][] = [
 
 // vipSignalOptions function
 const vipSignalOptions = (data: any): InlineButton[][] => {
-  const { oneMonth, threeMonths, sixMonths, oneYear } = data?.vipDiscountPrice;
+  const { oneMonth, threeMonths, sixMonths, oneYear } = data?.vipDiscountPrice || {}; // ✅ Add default empty object
   return [
     [
       { text: "VIP Report", callback_data: "vip_report", url: process.env.VIP_REPORT },

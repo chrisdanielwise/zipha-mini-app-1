@@ -2,20 +2,18 @@ import childProcess from "child_process";
 import os from "os";
 import process from "process";
 import dotenv from "dotenv";
-import { settingsClass } from "../controllers/callback_handlers/settings/settingsClass";
 import { GreyBotHandler } from "./greybotHandler";
-import { connectDB } from "../../database/connection";
+import { connectDB } from "./connection";
 import { Greybot, setWebhook } from "./setWebhook";
 import CatchMechanismClass from "../models/catchMechanismClass";
 import mongoose from "mongoose";
-
+import { settingsClass } from "../controllers/callback_handlers/settings/settingsClass";
 // Explicitly specify the .env.local file
 dotenv.config({ path: ".env.local" });
 
 export interface SessionData {
   step: string;
 }
-
 const nodeEnv: string = process.env.NODE_ENV || "development";
 const ADMIN_ID: string = process.env.ADMIN_ID as string;
 const USER_NAME: string = process.env.USER_NAME as string;
@@ -37,6 +35,7 @@ async function initializeGreybot(): Promise<void> {
     // Initialize handlers and load settings
     await GreyBotHandler();
     const settings = settingsClass();
+    // console.log(await settings.getSettings(),"settings ")
     await settings.getSettings();
     const catchMechanismInstance = CatchMechanismClass.getInstance(mongoose.connection);
     await catchMechanismInstance.initialize();
@@ -145,4 +144,4 @@ export {
   initializeGreybot,
   sendSystemInfoToAdmin,
   restartBotWithPM2,
-}; 
+};

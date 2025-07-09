@@ -8,7 +8,7 @@ import { handleGiftCoupon } from "../settings/handleGiftCoupon";
 import Coupon from "../../../models/couponClass";
 import CatchMechanismClass from "../../../models/catchMechanismClass";
 import { generateCaption, retryApiCall } from "../../../config/utilities";
-import { userInfoSingletonInstance } from "../../../models/userInfoSingleton";
+import { createUserInstance } from "server/bot/models/userInfoSingleton";
 
 const couponInstance = Coupon.getInstance();
 const catchMechanismClassInstance = CatchMechanismClass.getInstance(mongoose.connection);
@@ -76,7 +76,7 @@ export async function handleMessages(ctx: Context): Promise<void> {
           keyboard: [[
             {
               text: "Zipha  App",
-              web_app: { url: process.env.TELEGRAM_URL || "" }
+              web_app: { url: process.env.TELEGRAM_URL }
             } 
           ]],
           resize_keyboard: true,
@@ -125,12 +125,12 @@ async function handlePhotoMessage(ctx: Context, message: any): Promise<void> {
   }
 
   // Set the user properties and update the subscription status to "inactive"
-        userInfoSingletonInstance.setUserProperties(userId, username, ctx);
-      userInfoSingletonInstance.subscriptionStatus("inactive");
+  createUserInstance.setUserProperties(userId, username, ctx);
+  createUserInstance.subscriptionStatus("inactive");
 
   // Try to save the user information in the database.
   try {
-    await userInfoSingletonInstance.saveUserToDB();
+    await createUserInstance.saveUserToDB();
   } catch (error: any) {
     await handleErrorMessage(ctx, message, "Error saving user data.", 5000);
     return;
@@ -195,50 +195,95 @@ async function handlePhotoMessage(ctx: Context, message: any): Promise<void> {
   }
 
   // Generate a caption for the photo based on the context and payment/service options.
-  const caption = generateCaption({ ctx, serviceOption, paymentOption, paymentType });
+  const caption = generateCaption(ctx, serviceOption, paymentOption, paymentType);
 
   // Get the channel ID from environment variables (where the approval messages should be sent).
-  const channelId = Number(process.env.VIP_SIGNAL_ID);
+  const channelId = process.env.APPROVAL_CHANNEL_ID!;
 
-  // Send the photo with caption to the channel for approval.
-  try {
-    await ctx.api.sendPhoto(channelId, photoId, {
-      caption: caption,
-      parse_mode: "HTML",
-    });
-
-    // Send a confirmation message to the user.
-    await ctx.reply(
-      "✅ Your screenshot has been submitted successfully! We'll review it and get back to you soon.",
-      { parse_mode: "HTML" }
-    );
-  } catch (error) {
-    console.error("Error sending photo to channel:", error);
-    await handleErrorMessage(ctx, message, "Error submitting screenshot. Please try again.", 5000);
+  // Retrieve the current message count for the user (used to create unique callback data).
+  const messageIdCount = await screenshotStorage.getMessageIdCount(userId);
+  if (messageIdCount === null) {
+    throw new Error("Message ID count is null, cannot proceed.");
   }
+
+  // Define an inline keyboard for approving or appealing the payment.
+  const inlineKeyboard = [
+    [{ text: "Approve", callback_data: `approve_${userId}_${messageIdCount - 1}` }],
+    [{ text: "Appeal", callback_data: `appeal_${userId}_${messageIdCount - 1}` }],
+  ];
+
+  // Send the photo along with the caption and inline keyboard to the approval channel.
+  const responseChannel = await retryApiCall(() =>
+    ctx.api.sendPhoto(channelId, photoId, {
+      caption,
+      reply_markup: { inline_keyboard: inlineKeyboard },
+      parse_mode: "HTML",
+    })
+  );
+
+  // Inform the user that the payment screenshot was sent for verification.
+  const responsePayment = await retryApiCall(() =>
+    ctx.reply("Payment screenshot sent for verification. Please wait for approval.", {
+      reply_markup: { inline_keyboard: [[{ text: "Go Back", callback_data: "goback" }]] },
+    })
+  );
+
+  // Update the screenshot storage with the IDs of the messages sent to the channel and the user.
+  await screenshotStorage.updateChannelAndPaymentMessageId(
+    userId,
+    messageId,
+    responseChannel.message_id,
+    responsePayment.message_id
+  );
+
+  // Finally, add the user data to the catch mechanism for further processing.
+  await catchMechanismClassInstance.addCatchMechanism(userId);
 }
+
 
 async function handleErrorMessage(ctx: Context, message: any, errorMessage: string, timeOut: number): Promise<void> {
   try {
-    const errorReply = await ctx.reply(`❌ ${errorMessage}`);
+    if (!ctx.chat) {
+      throw new Error("Chat context is missing!");
+    }
+    
+    const chatId = ctx.chat.id;
+    
+    await retryApiCall(() => ctx.api.deleteMessage(chatId, message.message_id));
+    const replyMessage = await retryApiCall(() => ctx.reply(errorMessage, { parse_mode: "HTML" }));
+
     setTimeout(async () => {
       try {
-        await ctx.api.deleteMessage(errorReply.chat?.id, errorReply.message_id);
-        await ctx.api.deleteMessage(message.chat?.id, message.message_id);
-      } catch (deleteError) {
-        console.error("Error deleting messages:", deleteError);
+        await retryApiCall(() => ctx.api.deleteMessage(chatId, replyMessage.message_id));
+      } catch (error) {
+        console.error("Error deleting reply message:", error);
       }
     }, timeOut);
   } catch (error) {
-    console.error("Error handling error message:", error);
+    console.error("Critical error handling error message:", error);
+    await handleError(ctx, error);
   }
 }
 
 async function handleError(ctx: Context, error: any): Promise<void> {
-  console.error("Error in handleMessages:", error);
   try {
-    await ctx.reply("❌ An error occurred. Please try again or contact support.");
-  } catch (replyError) {
-    console.error("Error sending error message:", replyError);
+    if (!ctx.chat) {
+      throw new Error("Chat context is missing!");
+    }
+    
+    const chatId = ctx.chat.id;
+    const errorMessage = error.response?.status === 429
+      ? "Servers busy! Try again later."
+      : error.response?.status === 400
+      ? "Error with request. Try again!"
+      : `Something went wrong: ${error}`;
+
+    const replyMessage = await retryApiCall(() => ctx.reply(errorMessage, { parse_mode: "HTML" }));
+
+    setTimeout(async () => {
+      await retryApiCall(() => ctx.api.deleteMessage(chatId, replyMessage.message_id));
+    }, 5000);
+  } catch (retryError) {
+    console.error("Error handling retry:", retryError);
   }
-} 
+}

@@ -57,20 +57,20 @@ const Action = () => {
     return data.settings; // latest settings from the server
   };
 
-  useEffect(() => {
-    const fetchNairaPrice = async () => {
-      try {
-        const res = await fetch("/api/subscription/naira-price");
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to fetch naira price");
-        setNairaPrice(data.nairaPrice); // or adjust depending on your response structure
-      } catch (error) {
-        console.error("Error fetching naira price:", error);
-      }
-    };
+useEffect(() => {
+  const fetchNairaPrice = async () => {
+    try {
+      const res = await fetch("/api/subscription/naira-price");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch naira price");
+      setNairaPrice(data.nairaPrice); // This line is the likely suspect
+    } catch (error) {
+      console.error("Error fetching naira price:", error);
+    }
+  };
 
-    fetchNairaPrice();
-  }, []); // ✅ empty dependency array ensures it runs once
+  fetchNairaPrice();
+}, []);
   /* ───────────────────────── Change handlers ──────────────────────────── */
   const handleSelectAllChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;

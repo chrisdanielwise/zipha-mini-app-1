@@ -3,14 +3,17 @@ import { connectDB } from "../../../../../server/bot/config/connection";
 import { settingsClass } from "../../../../../server/bot/controllers/callback_handlers/settings/settingsClass";
 import settingsModel from "../../../../../server/bot/models/settings.model";
 
+// server/app/api/subscription/naira-price/route.ts
+
 export async function GET(req: NextRequest) {
   try {
-    await connectDB(); // ✅ Ensure DB connection before anything else
-    const nairaPrice = await settingsClass().getSettings();
+    await connectDB();
+    const settings = await settingsClass().getSettings(); // Get the whole settings object
 
+    // Send back ONLY the specific value the client needs
     return NextResponse.json({
-      message: "Fetched Naira and VIP prices",
-      nairaPrice
+      message: "Fetched Naira price",
+      nairaPrice: settings.nairaPrice // <-- Extract the number here
     });
   } catch (error) {
     console.error("GET /subscription/naira-price error:", error);

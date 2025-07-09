@@ -49,4 +49,4 @@ export async function handleSelectionConfirmation(
     await screenshotStorage.setServiceOption(userId, selectedOptions.serviceOption);
     await sendSelectionConfirmation("Service option", selectedOptions.serviceOption);
   }
-} 
+}

@@ -2,8 +2,8 @@ import { Navigation } from "../../navigation/navigationClass";
 import { handleSelectionConfirmation } from "./selectionConfirmation";
 import { Context } from "grammy";
 import { EXPIRATION_DATES } from "./constants";
-import Coupon from "../../../models/couponClass";
-import { userInfoSingletonInstance } from "../../../models/userInfoSingleton";
+import Coupon from "server/bot/models/couponClass";
+import { createUserInstance } from "server/bot/models/userInfoSingleton";
 
 const couponInstance = Coupon.getInstance();
 
@@ -38,13 +38,13 @@ export async function handleNavigationAction(
         // Calculate expiration date separately
         function calculateExpirationDate(option: string): number {
           const currentTimestamp = Date.now();
-          const subscriptionPeriod = EXPIRATION_DATES[option as keyof typeof EXPIRATION_DATES];
+          const subscriptionPeriod = EXPIRATION_DATES[option];
           return currentTimestamp + subscriptionPeriod;
         }
         // Pre-calculate expiration date when user selects subscription option
         const expirationDate = calculateExpirationDate(option);
-            userInfoSingletonInstance.subscribe(option);
-    userInfoSingletonInstance.setExpirationDate(expirationDate);
+        createUserInstance.subscribe(option);
+        createUserInstance.setExpirationDate(expirationDate);
         break;
       }
       case "gift_coupon": {
@@ -57,11 +57,11 @@ export async function handleNavigationAction(
       case "$10,000 - $49,000":
       case "$50,000 - $1 million":
       case "bootcamp_payment": {
-        userInfoSingletonInstance.subscribe(option);
+        createUserInstance.subscribe(option);
         break;
       }
     }
   } catch (error) {
     console.error("Error handling navigation action:", error);
   }
-} 
+}

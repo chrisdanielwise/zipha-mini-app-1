@@ -1,5 +1,8 @@
-import { connectDB } from "../../../../database/connection";
-import settingsModel from "../../../models/settings.model";
+// import { connectDB } from "src/lib/zipha_bot/config/connection";
+// import settingsModel from "src/lib/zipha_bot/models/settings.model";
+
+import settingsModel from "server/bot/models/settings.model";
+import { connectDB } from "server/database/connection";
 
 class Settings {
   public userId: string;
@@ -53,7 +56,91 @@ class Settings {
       this.settingMessage = null;
     }
   }
+  // async updateSettings(callbackQuery: string, newData: any): Promise<any> {
+  //   let settingsDoc = await settingsModel.findOne({ userId: this.userId });
+  // // console.log(callbackQuery,newData,"callbackQuery,newData")
+  //   let updateDoc: any;
+  
+  //   // Check if the incoming newData is an object with multiple fields (like all vip prices)
+  //   const vipKeys = ['oneMonth', 'threeMonths', 'sixMonths', 'oneYear'];
 
+  //   // ✅ Check if it's a bulk VIP price update (by shape)
+  //   const isBulkVipPriceUpdate = (
+  //     typeof newData === 'object' &&
+  //     Object.keys(newData).every((key) => vipKeys.includes(key))
+  //   );
+  
+  
+  //   if (isBulkVipPriceUpdate) {
+  //     // Rebuild the update structure to match nested vipPrice keys
+  //     const vipPriceUpdate: Record<string, number> = {};
+  //     for (const [key, value] of Object.entries(newData)) {
+  //       vipPriceUpdate[`settings.vipDiscountPrice.${key}`] = value as number
+  //     }
+  
+  //     updateDoc = { $set: vipPriceUpdate };
+  //     await connectDB();      
+  //   } else {
+  //     switch (callbackQuery) {
+  //       case "nairaPrice":
+  //         updateDoc = { $set: { [`settings.${callbackQuery}`]: Number(newData) } };
+  //         break;
+  //       case "oneMonth":
+  //       case "threeMonth":
+  //       case "sixMonth":
+  //       case "oneYear":
+  //         updateDoc = {
+  //           $set: {
+  //             [`settings.vipPrice.${callbackQuery}`]: Number(newData),
+  //           },
+  //         };
+  //         const result = await this.getSettings();
+  //         this.settings.vipDiscountPrice = result.vipPrice;
+  //         this.settings.vipDiscountPrice[callbackQuery] = Number(newData);
+  //         await this.updateSettings("vipDiscountPrice", this.settings.vipDiscountPrice);
+  //         break;
+  //       case "vipDiscountPrice":
+  //         updateDoc = { $set: { [`settings.${callbackQuery}`]: newData } };
+  //         break;
+  //       default:
+  //         console.warn("Unknown callbackQuery and unrecognized bulk update.");
+  //         return;
+  //     }
+  //   }
+  
+  //   if (updateDoc) {
+  //     settingsDoc = await settingsModel.findOneAndUpdate(
+  //       { userId: this.userId },
+  //       updateDoc,
+  //       {
+  //         new: true,
+  //         upsert: true,
+  //         runValidators: false, // 💡 MUST stay here
+  //       }
+  //     );
+      
+  //     await settingsDoc.save();
+  //     this.settings = settingsDoc.settings;
+
+  //       // ✅ Re-fetch updated document
+  //   const updatedDoc = await settingsModel.findOne({ userId: this.userId });
+  //   // if (!updatedDoc) throw new Error("Settings not found after update");
+
+  //   // this.settings = updatedDoc.settings;
+
+  //   // ✅ Refresh vipDiscountPrice manually after bulk update
+  //   // if (isBulkVipPriceUpdate) {
+  //   //   this.settings.vipDiscountPrice = {
+  //   //     ...this.settings.vipDiscountPrice,
+  //   //     ...newData,
+  //   //   };
+  //   // }
+  //     return this.settings; // ✅ Now returns updated settings
+  //   } else {
+  //     console.log("No updates to apply");
+  //     return;
+  //   }
+  // }
   async updateSettings(callbackQuery: string, newData: any): Promise<any> {
     await connectDB();
     let settingsDoc = await settingsModel.findOne({ userId: this.userId });
@@ -116,95 +203,67 @@ class Settings {
         {
           new: true,
           upsert: true,
-          runValidators: false, // 💡 MUST stay here
+          runValidators: false,
         }
       );
-      if (settingsDoc) {
-        await settingsDoc.save();
-        this.settings = (settingsDoc as any).settings || {};
-      } else {
-        this.settings = {};
-      }
-      // ✅ Re-fetch updated document
-      const updatedDoc = await settingsModel.findOne({ userId: this.userId });
-      // if (!updatedDoc) throw new Error("Settings not found after update");
-      // this.settings = updatedDoc.settings;
-      // ✅ Refresh vipDiscountPrice manually after bulk update
-      // if (isBulkVipPriceUpdate) {
-      //   this.settings.vipDiscountPrice = {
-      //     ...this.settings.vipDiscountPrice,
-      //     ...newData,
-      //   };
-      // }
-      return this.settings; // ✅ Now returns updated settings
+  
+      await settingsDoc.save();
+      this.settings = settingsDoc.settings;
+  
+      return this.settings;
     } else {
       console.log("No updates to apply");
       return;
     }
   }
+  
 
   async getSettings(): Promise<any> {
-    await connectDB();
-    const settingsDoc = await settingsModel.findOne({ userId: this.userId });
-    if (settingsDoc && (settingsDoc as any).settings) {
-      this.settings = (settingsDoc as any).settings;
-      return this.settings;
-    } else {
-      // Create default settings if none exist
-      const defaultSettings = {
-        nairaPrice: 1000,
-        vipPrice: {
-          oneMonth: 50,
-          threeMonth: 120,
-          sixMonth: 200,
-          oneYear: 350,
-        },
-        vipDiscountPrice: {
-          oneMonth: 50,
-          threeMonth: 120,
-          sixMonth: 200,
-          oneYear: 350,
-        },
-        servicePrices: {
-          vip: {},
-          mentor: {},
-        },
-      };
-      const newSettingsDoc = new settingsModel({
+    let settingsDoc = await settingsModel.findOne({ userId: this.userId });
+    if (!settingsDoc) {
+      // Create a new document if one doesn't exist
+      settingsDoc = await settingsModel.create({
         userId: this.userId,
-        settings: defaultSettings,
+        settings: {
+          language: "",
+          notificationPreferences: false,
+          nairaPrice: 1600,
+          vipPrice: {
+            oneMonth: 52,
+            threeMonths: 112,
+            sixMonths: 212,
+            oneYear: 402,
+          },
+          vipDiscountPrice: {
+            oneMonth: 52,
+            threeMonths: 112,
+            sixMonths: 212,
+            oneYear: 402,
+          },
+        },
       });
-      try {
-        await newSettingsDoc.save();
-      } catch (error: any) {
-        if (error.code === 11000) {
-          // Document already exists, just fetch it
-          const existingDoc = await settingsModel.findOne({ userId: this.userId });
-          if (existingDoc && (existingDoc as any).settings) {
-            this.settings = (existingDoc as any).settings;
-            return this.settings;
-          }
-        }
-        throw error;
-      }
-      this.settings = defaultSettings;
-      return this.settings;
+      await settingsDoc.save();
     }
+    this.settings = settingsDoc.settings;
+    return this.settings;
   }
 
   static async getNairaPriceByUserId(userId: number | string): Promise<number> {
-    await connectDB();
-    const settingsDoc = await settingsModel.findOne({ userId: userId.toString() });
-    return (settingsDoc && (settingsDoc as any).settings && (settingsDoc as any).settings.nairaPrice) || 1000;
+    const settingsDoc = await settingsModel.findOne({ userId });
+    return settingsDoc.settings.nairaPrice;
   }
-
-  getUserID():string{
+ getUserID():string{
     return this.userId;
   }
 }
 
+let instance: Settings | null = null;
+
 const settingsClass = (): Settings => {
-  return new Settings();
+  if (!instance) {
+    instance = new Settings();
+  }
+  return instance;
 };
 
-export { settingsClass }; 
+export { settingsClass, Settings };

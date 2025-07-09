@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimiterMiddleware } from "../../../../server/bot/config/rateLimiter";
-import { Greybot } from "../../../../server/bot/config/setWebhook";
-import { initializeGreybot } from "../../../../server/bot/config/initBot";
+
 import axios from "axios";
+import { Greybot, initializeGreybot } from "server/bot/config/initBot";
+import { rateLimiterMiddleware } from "server/bot/config/rateLimiter";
 
 
 // Ensure the bot token exists

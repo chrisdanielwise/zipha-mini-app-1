@@ -1,24 +1,27 @@
+import { Db, MongoClient } from "mongodb";
 import mongoose from "mongoose";
-
-export async function connectDB(): Promise<void> {
-  try {
-    const mongoUri = process.env.MONGODB_URI;
-    
-    if (!mongoUri) {
-      console.error("❌ MONGODB_URI environment variable is not defined");
-      console.error("❌ Please set MONGODB_URI in your .env.local file");
-      throw new Error("MONGODB_URI environment variable is not defined");
-    }
-
-    if (mongoose.connection.readyState === 1) {
-      console.log("✅ MongoDB already connected");
-      return;
-    }
-
-    await mongoose.connect(mongoUri);
-    console.log("✅ Connected to MongoDB successfully!");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    throw error;
+export async function connectDB(): Promise<{ client: typeof mongoose; db: typeof mongoose.connection }> {
+  if (mongoose.connection.readyState >= 1) {
+    return { client: mongoose, db: mongoose.connection }; // Already connected
   }
-} 
+
+  await mongoose.connect(process.env.DB_CONNECT as string, {
+    autoIndex: false,
+    bufferCommands: false,
+    serverSelectionTimeoutMS: 50000,
+    maxPoolSize: Number(process.env.MONGO_POOLSIZE) || 5,
+  });
+
+  await handleMongooseConnectionEvents(); // ✅ good for debugging and lifecycle tracking
+
+  return { client: mongoose, db: mongoose.connection };
+}
+
+function handleMongooseConnectionEvents(): void {
+  mongoose.connection.on("connected", () => console.log("Connected to MongoDB successfully!"));
+  mongoose.connection.on("open", () => console.log("MongoDB connection is now open!"));
+  mongoose.connection.on("disconnected", () => console.log("Disconnected from MongoDB. Trying to reconnect..."));
+  mongoose.connection.on("reconnected", () => console.log("Reconnected to MongoDB successfully!"));
+  mongoose.connection.on("disconnecting", () => console.log("Disconnecting from MongoDB..."));
+  mongoose.connection.on("close", () => console.log("MongoDB connection is now closed."));
+}
