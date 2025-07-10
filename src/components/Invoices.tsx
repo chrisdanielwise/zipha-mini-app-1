@@ -4,7 +4,7 @@ import React, { memo, useState, useMemo } from "react";
 import GenericTable from "./table";  
 import { RiMenuUnfold2Fill } from "react-icons/ri";  
 import Image, { StaticImageData } from "next/image"; // Import StaticImageData  
-import dp from '../app/Assets/dp.jpg'; // Ensure this path is correct  
+import dp from '../app/Assets/dp1.jpeg'; // Updated to use available asset  
 
 interface PaymentData {  
     id: number;  
@@ -18,20 +18,28 @@ interface PaymentData {
 
 // Function to render cells for PaymentData  
 const renderPaymentCells = (row: PaymentData) => [  
-    <td className="user" key="username" style={{display:'flex', alignItems:"start"}}>  
+    <td className="flex items-center gap-3" key="username">  
         <Image   
             src={row.profilePicture}   
             alt={`${row.username}'s profile`}   
-            width={25}   
-            height={25}   
-            style={{ borderRadius: '50%', marginRight: 4}}   
+            width={32}   
+            height={32}   
+            className="rounded-full object-cover"   
         />  
-        {row.username}  
+        <span className="font-medium text-gray-800">{row.username}</span>  
     </td>,  
-    <td key="package">{row.package}</td>,  
-    <td key="amount">{row.amount}</td>,  
-    <td key="paymentMethod">{row.paymentMethod}</td>,  
-    <td key="status">{row.status}</td>,  
+    <td key="package" className="text-gray-700">{row.package}</td>,  
+    <td key="amount" className="font-semibold text-gray-800">{row.amount}</td>,  
+    <td key="paymentMethod" className="text-gray-700">{row.paymentMethod}</td>,  
+    <td key="status">
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+        row.status === 'Approved' ? 'bg-green-100 text-green-800' :
+        row.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+        'bg-red-100 text-red-800'
+      }`}>
+        {row.status}
+      </span>
+    </td>,  
 ];  
 
 const columns = [  
@@ -62,18 +70,19 @@ const Invoices = () => {
 
     return (  
         <div>  
-            <div className="w-flex">  
+            <div className="flex items-center justify-between mb-4">  
                 <div>  
-                    <h1>Invoices</h1>  
-                    <p>{data.length} Invoices</p>  
+                    <h3 className="text-lg font-semibold text-gray-800">Recent Invoices</h3>  
+                    <p className="text-sm text-gray-600">{data.length} total invoices</p>  
                 </div>  
                 
-                <div style={{ marginLeft: 'auto' }}>  
-                    <label htmlFor="statusFilter">Filter by: </label>  
+                <div className="flex items-center gap-2">  
+                    <label htmlFor="statusFilter" className="text-sm text-gray-600">Filter: </label>  
                     <select  
                         id="statusFilter"  
                         value={filterStatus || ''}  
                         onChange={(e) => setFilterStatus(e.target.value || null)}  
+                        className="px-3 py-1 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >  
                         <option value="">All</option>  
                         <option value="Pending">Pending</option>  

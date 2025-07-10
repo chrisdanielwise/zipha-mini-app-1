@@ -1,53 +1,37 @@
 "use client";
 
-import { useState, memo } from "react";
-import Header from "../../../components/Header";
+import { memo } from "react";
 import Link from "next/link";
-import { MdKeyboardArrowRight } from "react-icons/md";
-import { MdArrowBackIos } from "react-icons/md";
+import { MdKeyboardArrowRight, MdArrowBackIos } from "react-icons/md";
+import Card from "../../../components/ui/Card";
 
 const AboutSettings = () => {
   return (
-    <main>
-      <Header />
-      <div className="top-nav">
-        <div>
-          <Link href="/settings">
-            <MdArrowBackIos className="t-i" />
-          </Link>
-          <p>About</p>
-        </div>
+    <div className="flex flex-col gap-8 mt-4 max-w-xl mx-auto">
+      <div className="flex items-center gap-2 mb-2">
+        <Link href="/settings">
+          <MdArrowBackIos className="text-2xl text-water-dark hover:text-water-light transition" />
+        </Link>
+        <span className="text-2xl font-bold text-water-dark">About</span>
       </div>
-      <h1 className="sets">Zipha Version 7.20</h1>
-
-      <div className="subsc-table pack-table act">
-        <div className="barcharts">
-          <div className="proff">
-            <div className="s-l">
-              <div>
-                <p>Terms & Conditions</p>
-              </div>
-              <MdKeyboardArrowRight className="arr-i" />
-            </div>
-
-            <div className="s-l">
-              <div>
-                <p>Privacy Policy</p>
-              </div>
-              <MdKeyboardArrowRight className="arr-i" />
-            </div>
-
-            {/* 👉 Updated Version Upgrade block to link to Telegram */}
-            <a href="https://t.me/your_bot_username" target="_blank" rel="noopener noreferrer" className="s-l">
-              <div>
-                <p>Version Upgrade</p>
-              </div>
-              <MdKeyboardArrowRight className="arr-i" />
-            </a>
+      <Card className="flex flex-col gap-2 p-6">
+        <h1 className="text-lg font-semibold text-water-dark mb-2">Zipha Version 7.20</h1>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-water-light rounded-xl px-3 transition">
+            <span className="text-water-dark text-base">Terms & Conditions</span>
+            <MdKeyboardArrowRight className="text-2xl text-water-dark/60" />
           </div>
+          <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-water-light rounded-xl px-3 transition">
+            <span className="text-water-dark text-base">Privacy Policy</span>
+            <MdKeyboardArrowRight className="text-2xl text-water-dark/60" />
+          </div>
+          <a href="https://t.me/your_bot_username" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between py-2 cursor-pointer hover:bg-water-light rounded-xl px-3 transition">
+            <span className="text-water-dark text-base">Version Upgrade</span>
+            <MdKeyboardArrowRight className="text-2xl text-water-dark/60" />
+          </a>
         </div>
-      </div>
-    </main>
+      </Card>
+    </div>
   );
 };
 

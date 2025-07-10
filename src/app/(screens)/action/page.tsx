@@ -1,22 +1,19 @@
 "use client";
 
 import { useState, memo, useEffect } from "react";
-import Header from "../../../components/Header";
 import GiftCoupon from "../../../components/GiftCoupon";
-import { useAuth } from "@/app/context/AuthContext";
+import Card from "../../../components/ui/Card";
+
 /**
  * Action page – lets an admin:
  *  • pick discount levels
  *  • choose which services the discount applies to
- *  • update the NGN ↔ USD rate (“nairaPrice”) in the settings collection
+ *  • update the NGN ↔ USD rate ("nairaPrice") in the settings collection
 */
 const Action = () => {
   /* ─────────────────────── Checkbox / radio state ─────────────────────── */
-  const { user } = useAuth();
-  const userId = user?.id
+  const userId = 1; // TODO: Replace with actual user context
  
-  
-  // console.log(nairaPrice)
   const [selectAll, setSelectAll] = useState(false);
   const [checkboxes, setCheckboxes] = useState({
     vip1Month: false,
@@ -28,7 +25,6 @@ const Action = () => {
   });
   const [selectedDiscount, setSelectedDiscount] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState("all");
-
 
   /* ────────────────────────── Modal state ─────────────────────────────── */
   const [showModal, setShowModal] = useState(false);
@@ -216,157 +212,124 @@ const Action = () => {
     setSelectAll(false);
   };
 
-  /* ─────────────────────────── UI markup ─────────────────────────────── */
-
   return (
-    <main>
-      <Header />
-      <h1 className="action">Action </h1>
+    <div className="flex flex-col gap-8 mt-4 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold text-water-dark mb-2">Admin Actions</h1>
 
-      {/* ───── Discount section ───── */}
-      <div className="subsc-table pack-table act">
-        <div className="barcharts">
-          <div className="proff">
-            <h3>Discount Prices</h3>
+      {/* Naira Price Section */}
+      <Card className="p-6">
+        <h2 className="text-xl font-bold text-water-dark mb-4">Naira Price Settings</h2>
+        <div className="flex items-center gap-4">
+          <span className="text-water-dark/80">Current Rate: {nairaPrice ? `₦${nairaPrice}` : "Loading..."}</span>
+          <input
+            type="number"
+            placeholder="Enter new rate"
+            value={inputRate}
+            onChange={handleRateChange}
+            className="rounded-xl border border-water-light px-3 py-2 flex-1"
+          />
+          <button
+            onClick={handleSaveRate}
+            className="px-4 py-2 rounded-xl bg-water-light text-water-dark font-semibold hover:bg-water-dark hover:text-white transition"
+          >
+            Save Rate
+          </button>
+        </div>
+      </Card>
 
-            {/* Radio buttons – choose % off */}
-            <div className="discount">
-              {["10%", "20%", "30%", "40%", "50%"].map((percent) => (
-                <label key={percent}>
-                  <input
-                    type="radio"
-                    name="discount"
-                    value={percent}
-                    checked={selectedDiscount === percent}
-                    onChange={handleRadioChange}
-                  />
-                  <div className="off">{percent} off</div>
-                </label>
-              ))}
-              <label>
+      {/* Discount Settings */}
+      <Card className="p-6">
+        <h2 className="text-xl font-bold text-water-dark mb-4">Discount Settings</h2>
+        
+        {/* Discount Options */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-water-dark mb-3">Select Discount Level</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {["10", "20", "30", "40", "50", "60", "70", "80", "90", "reset"].map((discount) => (
+              <label key={discount} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="discount"
-                  value="reset"
-                  checked={selectedDiscount === "reset"}
+                  value={discount}
+                  checked={selectedDiscount === discount}
                   onChange={handleRadioChange}
+                  className="w-4 h-4 text-water-dark"
                 />
-                <div className="off">Reset All</div>
+                <span className="text-water-dark">
+                  {discount === "reset" ? "Reset" : `${discount}%`}
+                </span>
               </label>
-            </div>
-
-            {/* Example extra component (already imported) */}
-            {/* <GiftCoupon /> */}
-
-            {/* Service dropdown */}
-            <div className="action-services">
-              <h4>Services</h4>
-              <select
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
-                >
-                  <option value="all">All</option>
-                  <option value="Vip Signal">Vip Signal</option>
-                  <option value="1-on-1 Mentorship">1-on-1 Mentorship</option>
-                  <option value="Group Mentorship">Group Mentorship</option>
-                </select>
-
-            </div>
-
-            {/* Checkboxes */}
-            <div className="selection"> 
-              <h6>Select Services</h6>
-              <div className="select">
-              {
-                (selectedService === "Vip Signal" || selectedService === "all") && (
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={selectAll}
-                      onChange={handleSelectAllChange}
-                    />
-                    Select All
-                  </label>
-                )
-              }
-                {Object.entries(checkboxes)
-                  .filter(([key]) => {
-                    if (selectedService === "all") return true;
-                    if (selectedService === "Vip Signal") return key.startsWith("vip");
-                    if (selectedService === "1-on-1 Mentorship")
-                      return key === "oneOnOneMentorship";
-                    if(selectedService === "Group Mentorship") return key === "groupMentorship" 
-                    return false;
-                  })
-                  .map(([key, value]) => (
-                    <label key={key}>
-                      <input
-                        type="checkbox"
-                        checked={value}
-                        onChange={handleCheckboxChange(key as any)}
-                      />
-                      {key
-                        .replace(/vip(\d+)Month/, "VIP $1 Month")
-                        .replace("groupMentorship", "Group Mentorship")
-                        .replace("oneOnOneMentorship", "1-on-1 Mentorship")}
-                    </label>
-                ))}
-
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="app-btns">
-              <button className="a-btn" onClick={handleApprove}>
-                Approve
-              </button>
-              <button onClick={handleCancel}>Cancel</button>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
+
+        {/* Service Selection */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-water-dark mb-3">Apply to Services</h3>
+          <div className="flex items-center gap-3 mb-3">
+            <input
+              type="checkbox"
+              checked={selectAll}
+              onChange={handleSelectAllChange}
+              className="w-4 h-4 text-water-dark"
+            />
+            <span className="text-water-dark font-medium">Select All</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Object.entries(checkboxes).map(([key, checked]) => (
+              <label key={key} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={handleCheckboxChange(key as keyof typeof checkboxes)}
+                  className="w-4 h-4 text-water-dark"
+                />
+                <span className="text-water-dark">
+                  {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            onClick={handleApprove}
+            className="px-6 py-2 rounded-xl bg-water-dark text-white font-semibold hover:bg-water-light hover:text-water-dark transition"
+          >
+            Approve
+          </button>
+          <button
+            onClick={handleCancel}
+            className="px-6 py-2 rounded-xl bg-gray-300 text-gray-700 font-semibold hover:bg-gray-400 transition"
+          >
+            Cancel
+          </button>
+        </div>
+      </Card>
+
+      {/* Gift Coupon Section */}
+      <Card className="p-6">
+        <GiftCoupon />
+      </Card>
 
       {/* Modal */}
       {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <p>{modalMessage}</p>
-            <button onClick={handleCloseModal}>Close</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="rounded-3xl bg-glass-gradient shadow-water backdrop-blur-lg border border-white/30 p-8 min-w-[320px] max-w-[90vw] flex flex-col items-center">
+            <h2 className="text-lg font-bold text-water-dark mb-4">Action Result</h2>
+            <p className="text-water-dark/80 mb-6 text-center">{modalMessage}</p>
+            <button
+              onClick={handleCloseModal}
+              className="px-4 py-2 rounded-xl bg-water-light text-water-dark font-semibold hover:bg-water-dark hover:text-white transition"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
-
-      {/* ───── NGN Rate section ───── */}
-      <div className="subsc-table pack-table act">
-        <div className="barcharts">
-          <div className="proff">
-            <h3>Naira Rate</h3>
-
-            <div className="current">
-              <b>Current Rate</b>
-              <div className="rate">
-                <span>₦{nairaPrice}</span>
-              </div>
-              <b>to $1</b>
-            </div>
-
-            <div className="current">
-              <b>Rate Update</b>
-              <div className="rate">
-                <span>₦</span>
-                <input
-                  type="text"
-                  value={inputRate}
-                  onChange={handleRateChange}
-                />
-              </div>
-              <button onClick={handleSaveRate}>Save</button>
-            </div>
-          </div>
-        </div>
-      </div>
-     <GiftCoupon/>
-    </main>
+    </div>
   );
 };
 

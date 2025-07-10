@@ -1,40 +1,17 @@
-// app/layout.tsx
-import { ReactNode } from 'react';
-import { ThemeProvider } from './context/ThemeContext';
-import Script from 'next/script';
-import "./globals.css";
-import TelegramGuard from 'src/components/TelegramGuard';
-import TelegramScriptLoader from 'src/components/TelegramScriptLoader';
-import { AuthProvider } from './context/AuthContext';
-// import '../types/telegram-webapp.d.ts';
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import './globals.css';
+import type { Metadata } from 'next';
+import LayoutWrapper from '../components/ui/LayoutWrapper';
 
-export const metadata = {
-  title: 'Your App Title',
-  description: 'Your app description', 
+export const metadata: Metadata = {
+  title: 'Zipha Dashboard',
+  description: 'Modern water droplet morphism dashboard',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" >
-
-      <body>
-          <TelegramScriptLoader />
-            <AuthProvider>
-              <ThemeProvider>
-                {/* <TelegramViewportCSS /> */}
-                <TelegramGuard>
-                  <div className="dash">{children}</div>
-                  <ToastContainer 
-                    position="top-center" 
-                    autoClose={3000} 
-                    theme="dark"
-                    pauseOnHover
-                  />
-                </TelegramGuard>
-              </ThemeProvider>
-            </AuthProvider>
+    <html lang="en">
+      <body className="min-h-screen transition-colors duration-300">
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

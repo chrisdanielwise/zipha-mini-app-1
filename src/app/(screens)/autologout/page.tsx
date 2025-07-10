@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, memo } from "react";
-import Header from "../../../components/Header";
 import Link from "next/link";
 import { MdArrowBackIos } from "react-icons/md";
+import Card from "../../../components/ui/Card";
 
 const AutoLogout = () => {
   const [settings, setSettings] = useState({
@@ -36,39 +36,29 @@ const AutoLogout = () => {
   ] as const;
 
   return (
-    <main>
-      <Header />
-      <div className="top-nav">
-        <div>
-          <Link href="/settings">
-            <MdArrowBackIos className="t-i" />
-          </Link>
-          <p>Auto-LogOut Settings</p>
-        </div>
+    <div className="flex flex-col gap-8 mt-4 max-w-xl mx-auto">
+      <div className="flex items-center gap-2 mb-2">
+        <Link href="/settings">
+          <MdArrowBackIos className="text-2xl text-water-dark hover:text-water-light transition" />
+        </Link>
+        <span className="text-2xl font-bold text-water-dark">Auto-LogOut Settings</span>
       </div>
-
       {settingsOptions.map(({ key, title, description }) => (
-        <div className="subsc-table pack-table act" key={key}>
-          <div className="barcharts">
-            <div className="proff">
-              <div className="s-l">
-                <div className="sl-auto">
-                  <p>{title}</p>
-                  <p className="p">{description}</p>
-                </div>
-                <input
-                  type="checkbox"
-                  id={key}
-                  checked={settings[key]}
-                  onChange={() => handleToggle(key)}
-                  className="check-it"
-                />
-              </div>
-            </div>
+        <Card className="flex items-center justify-between gap-4 p-6" key={key}>
+          <div className="flex flex-col">
+            <span className="text-lg font-semibold text-water-dark">{title}</span>
+            <span className="text-water-dark/80 text-sm">{description}</span>
           </div>
-        </div>
+          <input
+            type="checkbox"
+            id={key}
+            checked={settings[key]}
+            onChange={() => handleToggle(key)}
+            className="w-6 h-6 accent-water-light border-water-dark rounded-lg shadow-water focus:ring-2 focus:ring-water-light"
+          />
+        </Card>
       ))}
-    </main>
+    </div>
   );
 };
 

@@ -4,9 +4,8 @@ import { useState, useMemo, useEffect, memo } from "react";
 import Image from "next/image";
 import dp from "@/app/Assets/dp1.jpeg";
 import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
-import Header from "src/components/Header";
-import GenericTable from "src/components/table";
-
+import Card from "../../../components/ui/Card";
+import GenericTable from "../../../components/table";
 
 interface Subscription {
   id: number;
@@ -60,57 +59,46 @@ const UserProfile = () => {
   }, []);
 
   return (
-    <main>
-      <Header />
-
-      <section className="barcharts">
-        <div className="proff">
-          <h3>User Profile</h3>
-          <div className="prof">
-            <Image src={dp} alt="User DP" />
-            <div>
-              <h4>Lucia John Doe</h4>
-              <p>@johndoe</p>
-            </div>
-          </div>
-          <h5>Phone: <span>+23465799887</span></h5>
-          <h5>Account status: <span>Active</span></h5>
-          <h5>Registration date: <span>2023-05-01</span></h5>
-        </div>
-      </section>
-
-      <section className="barcharts">
-        <div className="proff">
-          <h3>User Summary</h3>
-
-          {[
-            { label: "Active Subscription", value: "3" },
-            { label: "Total Expenditure", value: "$685" },
-            { label: "Days remaining across all plans", value: "132 days" },
-            { label: "Frequently used service", value: "VIP 3 Months" },
-          ].map(({ label, value }, idx) => (
-            <div className="user-check" key={idx}>
-              <IoCheckmarkDoneCircleSharp className="us-i" />
-              <p>{label}: <span>{value}</span></p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="subsc-table">
-        <div className="barcharts">
-          <div className="proff">
-            <h3>Subscription Overview</h3>
-            <GenericTable<Subscription>
-              columns={columns}
-              data={filteredData}
-              itemsPerPage={5}
-              renderCell={renderSubscriptionCells}
-            />
+    <div className="flex flex-col gap-8 mt-4 max-w-3xl mx-auto">
+      <Card className="flex flex-col items-center gap-4 p-6">
+        <h3 className="text-2xl font-bold text-water-dark mb-2">User Profile</h3>
+        <div className="flex items-center gap-4">
+          <Image src={dp} alt="User DP" className="rounded-full w-20 h-20 object-cover border-4 border-water-light" />
+          <div>
+            <h4 className="text-xl font-semibold text-water-dark">Lucia John Doe</h4>
+            <p className="text-water-dark/80">@johndoe</p>
           </div>
         </div>
-      </section>
-    </main>
+        <div className="flex flex-wrap gap-6 mt-2">
+          <span className="text-water-dark/80 text-base">Phone: <span className="font-semibold">+23465799887</span></span>
+          <span className="text-water-dark/80 text-base">Account status: <span className="font-semibold">Active</span></span>
+          <span className="text-water-dark/80 text-base">Registration date: <span className="font-semibold">2023-05-01</span></span>
+        </div>
+      </Card>
+      <Card className="flex flex-col gap-3 p-6">
+        <h3 className="text-xl font-bold text-water-dark mb-2">User Summary</h3>
+        {[
+          { label: "Active Subscription", value: "3" },
+          { label: "Total Expenditure", value: "$685" },
+          { label: "Days remaining across all plans", value: "132 days" },
+          { label: "Frequently used service", value: "VIP 3 Months" },
+        ].map(({ label, value }, idx) => (
+          <div className="flex items-center gap-3" key={idx}>
+            <IoCheckmarkDoneCircleSharp className="text-xl text-water-light" />
+            <p className="text-water-dark/90">{label}: <span className="font-semibold">{value}</span></p>
+          </div>
+        ))}
+      </Card>
+      <Card className="p-6">
+        <h3 className="text-xl font-bold text-water-dark mb-4">Subscription Overview</h3>
+        <GenericTable<Subscription>
+          columns={columns}
+          data={filteredData}
+          itemsPerPage={5}
+          renderCell={renderSubscriptionCells}
+        />
+      </Card>
+    </div>
   );
 };
 
