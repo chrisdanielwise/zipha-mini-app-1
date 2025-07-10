@@ -1,6 +1,6 @@
 import fs from "fs";
 import { Context } from "grammy";
-import { Greybot } from "../config/initBot";
+import { getGreybot } from "../config/initBot";
 import path from "path";
 import userModel from "./user.model";
 
@@ -246,7 +246,7 @@ class UserInfo {
             console.error("Error saving user to DB:", error);
 
             const systemInfo = `        Error Message: Failed to update user info        Error Details: ${error.message}        User Details:         ${JSON.stringify({ userId: this.userId, username: this.username, fullName: this.fullName, subscription: this.subscription, groupMembership: this.groupMembership, inviteLink: this.inviteLink, }, null, 2)}      `;
-            await Greybot.api.sendMessage(ADMIN_ID!, systemInfo);
+            await getGreybot().api.sendMessage(ADMIN_ID!, systemInfo);
         }
     }
 

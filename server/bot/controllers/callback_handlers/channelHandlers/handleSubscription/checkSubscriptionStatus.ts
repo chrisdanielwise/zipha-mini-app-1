@@ -1,4 +1,4 @@
-import { Greybot } from "server/bot/config/setWebhook";
+import { getGreybot } from "server/bot/config/setWebhook";
 import { retryApiCall } from "server/bot/config/utilities";
 import userModel from "server/bot/models/user.model";
 import { UserInfo } from "server/bot/models/userManagementClass";
@@ -38,7 +38,7 @@ const GREYBOT_ID = Number(process.env.GREYBOT_ID) || 0; // Convert safely
         await handleExpiredSubscription(user);
         // Check if user has blocked the bot
         const isBlocked = await retryApiCall(() =>
-          Greybot.api.getChatMember(user.userId, GREYBOT_ID)
+          getGreybot().api.getChatMember(user.userId, GREYBOT_ID)
         );
         if (isBlocked.status === "member") {
           // Send message to user
@@ -67,7 +67,7 @@ You can check your subscription status via the bot for more info.
 If you have any issues, contact our support team.
 `;
           await retryApiCall(() =>
-            Greybot.api.sendMessage(user.userId, warningMessage)
+            getGreybot().api.sendMessage(user.userId, warningMessage)
           );
           console.log(`Sent expiration warning to user ${user.username}`);
         }
@@ -205,13 +205,13 @@ If you have any issues, contact our support team.
     try {
       // Get chat member
       const chatMember = await retryApiCall(() =>
-        Greybot.api.getChatMember(user.groupMembership.groupId, user.userId)
+        getGreybot().api.getChatMember(user.groupMembership.groupId, user.userId)
       );
 
       // Remove user from channel
       if (chatMember.status !== "left") {
         await retryApiCall(() =>
-          Greybot.api.unbanChatMember(user.groupMembership.groupId, user.userId)
+          getGreybot().api.unbanChatMember(user.groupMembership.groupId, user.userId)
         );
         console.log(`Removed user ${user.username} from channel`);
       }
@@ -249,7 +249,7 @@ If you have any issues, contact our support team.
 
 function revokeLink(groupId: number, link: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    Greybot.api
+    getGreybot().api
       .revokeChatInviteLink(groupId, link)
       .then(() => {
         resolve();
@@ -261,7 +261,7 @@ function revokeLink(groupId: number, link: string): Promise<void> {
 }
 
 function kickUser(groupId: number, userId: number): Promise<any> {
-  return Greybot.api.kickChatMember(groupId, userId);
+  return getGreybot().api.kickChatMember(groupId, userId);
 }
 
  async function checkExpiredUsersRemoved(): Promise<void> {
@@ -282,7 +282,7 @@ function kickUser(groupId: number, userId: number): Promise<any> {
 
     const chatId = Number(process.env.VIP_SIGNAL_ID);
     const totalUsersInChannel = await retryApiCall(() =>
-      Greybot.api.getChatMembersCount(chatId)
+      getGreybot().api.getChatMembersCount(chatId)
     );
 
     // Filter users not removed from channel
@@ -294,7 +294,7 @@ function kickUser(groupId: number, userId: number): Promise<any> {
         }
         try {
           const chatMember = await retryApiCall(() =>
-            Greybot.api.getChatMember(chatId, user.userId)
+            getGreybot().api.getChatMember(chatId, user.userId)
           );
           return chatMember.status !== "left" ? user : false;
         } catch (error) {
@@ -319,14 +319,14 @@ function kickUser(groupId: number, userId: number): Promise<any> {
           try {
             // Remove user from channel
             await retryApiCall(() =>
-              Greybot.api.kickChatMember(chatId, user.userId)
+              getGreybot().api.kickChatMember(chatId, user.userId)
             );
             console.log(`Removed user ${user.userId} from chat.`);
 
             // Revoke chat invite link
             if (user.inviteLink && user.inviteLink.link) {
               await retryApiCall(() =>
-                Greybot.api.revokeChatInviteLink(chatId, user.inviteLink.link)
+                getGreybot().api.revokeChatInviteLink(chatId, user.inviteLink.link)
               );
               console.log(`Revoked chat invite link for ${user.username}`);
             } else {
@@ -343,7 +343,7 @@ function kickUser(groupId: number, userId: number): Promise<any> {
           } catch (error:any) {
             console.error(`Error removing user ${user.userId}:`, error);
             await retryApiCall(() =>
-              Greybot.api.sendMessage(
+              getGreybot().api.sendMessage(
                 process.env.ADMIN_ID as string,
                 error.message || "Users could not be removed"
               )
@@ -362,7 +362,7 @@ function kickUser(groupId: number, userId: number): Promise<any> {
 
     // Send subscription report
     await retryApiCall(() =>
-      Greybot.api.sendMessage(
+      getGreybot().api.sendMessage(
         process.env.ADMIN_ID as string,
         `Subscription Report:
         Total users in database: ${totalUsers}
@@ -452,7 +452,7 @@ function kickUser(groupId: number, userId: number): Promise<any> {
 export async function sendMessageToUser(user: any): Promise<void> {
   try {
     await retryApiCall(() =>
-      Greybot.api.sendMessage(
+      getGreybot().api.sendMessage(
         user.userId,
         "<b>Your subscription has expired.</b> <i>Please renew your subscription to continue to enjoy our services.</i>",
         {

@@ -2,7 +2,7 @@
 import { Context, session } from "grammy";
 // const schedule = require('node-schedule');
 import schedule from "node-schedule";
-import { Greybot } from "./setWebhook";
+import { getGreybot } from "./setWebhook";
 import { Navigation } from "../controllers/navigation/navigationClass";
 import { handleChatMember } from "../controllers/callback_handlers/channelHandlers/handleChatMembers/handleChatMembers";
 import { handleMessages } from "../controllers/callback_handlers/messageHandler/messageHandler";
@@ -21,20 +21,20 @@ export async function GreyBotHandler(): Promise<void> {
   const navigation = Navigation.getInstance();
 
   // Add session middleware
-  Greybot.use(
+  getGreybot().use(
     session<SessionData, Context>({
       initial: () => ({ step: "idle" }),
     })
   );
 
-  Greybot.on("chat_member", async (ctx) => {
+  getGreybot().on("chat_member", async (ctx) => {
     await handleChatMember(ctx);
   });
 
-  Greybot.on("message", (ctx) => handleMessages(ctx));
-  Greybot.on("channel_post", handleChannelPost);
-  Greybot.on("callback_query:data", menuOptionsCallback);
-  Greybot.on("poll_answer", handlePollAnswer);
+  getGreybot().on("message", (ctx) => handleMessages(ctx));
+  getGreybot().on("channel_post", handleChannelPost);
+  getGreybot().on("callback_query:data", menuOptionsCallback);
+  getGreybot().on("poll_answer", handlePollAnswer);
 
   // Schedule subscription checks
   schedule.scheduleJob("0 0 0 * * *", async () => {
@@ -46,7 +46,7 @@ export async function GreyBotHandler(): Promise<void> {
   // Schedule maintenance every Monday at midnight
   schedule.scheduleJob("0 0 0 * * 1", async () => {
     console.log("Performing maintenance...");
-    await navigation.performMaintenance(Greybot);
+    await navigation.performMaintenance(getGreybot());
     console.log("Maintenance complete.");
   });
 }

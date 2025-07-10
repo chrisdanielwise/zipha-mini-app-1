@@ -9,19 +9,26 @@ export interface SessionData {
 }
 interface MyContext extends Context, SessionFlavor<SessionData> {}
 
-const greyBotToken: string = process.env.GREY_BOT_API_TOKEN as string;
+const greybotWebhook: string =  `${process.env.TELEGRAM_URL}/api/zipha_bot`;
+let greybotInstance: Bot<MyContext> | null = null;
 
-export const greybotWebhook: string =  `${process.env.TELEGRAM_URL}/api/zipha_bot`;
-export const Greybot = new Bot<MyContext>(greyBotToken);
+export function getGreybot(): Bot<MyContext> {
+  if (!greybotInstance) {
+    const greyBotToken: string = process.env.GREY_BOT_API_TOKEN as string;
+    if (!greyBotToken) throw new Error('❌ Bot token is missing. Check your .env file.');
+    greybotInstance = new Bot<MyContext>(greyBotToken);
+  }
+  return greybotInstance;
+}
+
+export { greybotWebhook };
 
 /**
  * Checks the current webhook and updates it if needed.
  */
 export async function setWebhook(): Promise<any> {
+    const Greybot = getGreybot();
     console.log("🔗 Current webhook URL:", greybotWebhook); 
-    if (!greyBotToken) { 
-      throw new Error('❌ Bot token is missing. Check your .env file.',);
-    }
     const currentWebhook = await Greybot.api.getWebhookInfo();
     if (currentWebhook.url !== greybotWebhook) {
       console.log("🔄 Updating webhook...");

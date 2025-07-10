@@ -4,7 +4,7 @@ import process from "process";
 import dotenv from "dotenv";
 import { GreyBotHandler } from "./greybotHandler";
 import { connectDB } from "./connection";
-import { Greybot, setWebhook } from "./setWebhook";
+import { getGreybot, setWebhook } from "./setWebhook";
 import CatchMechanismClass from "../models/catchMechanismClass";
 import mongoose from "mongoose";
 import { settingsClass } from "../controllers/callback_handlers/settings/settingsClass";
@@ -26,7 +26,7 @@ async function initializeGreybot(): Promise<void> {
     await connectDB();
     console.log("✅ Connected to MongoDB successfully!");
 
-    await Greybot.init();
+    await getGreybot().init();
     console.log("✅ Greybot initialized successfully!");
 
     // Set webhook if needed
@@ -121,7 +121,7 @@ async function sendSystemInfoToAdmin(err: any): Promise<void> {
 
   console.log("Sending error message to admin...");
   try {
-    await Greybot.api.sendMessage(adminId, systemInfo, {
+    await getGreybot().api.sendMessage(adminId, systemInfo, {
       parse_mode: "HTML",
       // disable_web_page_preview: true,
     });
@@ -140,7 +140,7 @@ async function restartBotWithPM2(): Promise<void> {
 }
 
 export { 
-  Greybot,
+  getGreybot,
   initializeGreybot,
   sendSystemInfoToAdmin,
   restartBotWithPM2,

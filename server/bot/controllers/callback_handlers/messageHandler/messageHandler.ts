@@ -76,7 +76,7 @@ export async function handleMessages(ctx: Context): Promise<void> {
           keyboard: [[
             {
               text: "Zipha  App",
-              web_app: { url: process.env.TELEGRAM_URL }
+              web_app: { url: process.env.TELEGRAM_URL || "" }
             } 
           ]],
           resize_keyboard: true,

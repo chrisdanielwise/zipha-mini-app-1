@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import axios from "axios";
-import { Greybot, initializeGreybot } from "server/bot/config/initBot";
+import { getGreybot, initializeGreybot } from "server/bot/config/initBot";
 import { rateLimiterMiddleware } from "server/bot/config/rateLimiter";
 
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // 🛠️ Manually Handle Update Instead of `webhookCallback`
       // Ensure the bot is initialized before handling updates.
       
-    await Greybot.handleUpdate(body);
+    await getGreybot().handleUpdate(body);
       
     return NextResponse.json({ ok: true });
   } catch (error) {

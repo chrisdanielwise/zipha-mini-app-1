@@ -1,8 +1,9 @@
 import { Document } from "mongoose";
 import CatchMechanism from "./catchMechanism";
-import { createUserInstance } from "./userInfoSingleton";
 import { Navigation } from "../controllers/navigation/navigationClass";
-import screenshotStorage from "../controllers/navigation/screenshotStorageClass";
+// Remove direct imports of createUserInstance and screenshotStorage
+// import { createUserInstance } from "./userInfoSingleton";
+// import screenshotStorage from "../controllers/navigation/screenshotStorageClass";
 
 const navigation = Navigation.getInstance();
 export interface ICatchMechanism {
@@ -72,6 +73,9 @@ class CatchMechanismClass {
   async addCatchMechanism(userId: number): Promise<ICatchMechanism | null> {
     try {
       const userMenuData = await navigation.getSingleUserMenu(userId);
+      // Use dynamic imports here
+      const { createUserInstance } = await import("./userInfoSingleton");
+      const screenshotStorage = (await import("../controllers/navigation/screenshotStorageClass")).default;
       const userManagementData = await createUserInstance.getUserManagementData(userId);
       const screenshotStorageData = await screenshotStorage.getScreenshotStorageData(userId);
 
@@ -94,6 +98,9 @@ class CatchMechanismClass {
 
   async updateUserCatchClasses(user: ICatchMechanism): Promise<void> {
     await navigation.addAllUsersToMenu([user.userMenu]);
+    // Use dynamic imports here
+    const { createUserInstance } = await import("./userInfoSingleton");
+    const screenshotStorage = (await import("../controllers/navigation/screenshotStorageClass")).default;
     await createUserInstance.addMultipleUsers([user.userManagement]);
     await screenshotStorage.addAllUsers([user.screenshotStorage]);
   }
