@@ -1,42 +1,30 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
-function verifyTelegramInitData(initData: string, botToken: string): boolean {
+export default function verifyTelegramInitData(initData: string, botToken: string): boolean {
   try {
-    const urlParams = new URLSearchParams(initData);
-    const hash = urlParams.get("hash");
-    
-    if (!hash) {
-      return false;
-    }
+    const parsedParams = new URLSearchParams(initData);
+    const hash = parsedParams.get('hash');
+    if (!hash) return false;
+    parsedParams.delete('hash');
 
-    // Remove hash from data
-    urlParams.delete("hash");
-    
-    // Sort parameters alphabetically
-    const sortedParams = Array.from(urlParams.entries())
+    const sortedParams = [...parsedParams.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n");
+      .map(([key, val]) => `${key}=${val}`)
+      .join('\n');
 
-    // Create secret key
-    if (!botToken) {
-      console.error("Bot token not provided");
-      return false;
-    }
+    const secret = crypto
+      .createHmac('sha256', 'WebAppData')
+      .update(botToken)
+      .digest();
 
-    const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
-    
-    // Calculate hash
-    const calculatedHash = crypto
-      .createHmac("sha256", secretKey)
+    const generatedHash = crypto
+      .createHmac('sha256', secret)
       .update(sortedParams)
-      .digest("hex");
+      .digest('hex');
 
-    return calculatedHash === hash;
-  } catch (error) {
-    console.error("Error verifying Telegram init data:", error);
+    return generatedHash === hash;
+  } catch (err) {
+    console.error('Verification error:', err);
     return false;
   }
 }
-
-export default verifyTelegramInitData; 

@@ -1,27 +1,17 @@
 import { Bot, Context, SessionFlavor } from "grammy";
 import dotenv from "dotenv";
 
+
 dotenv.config({ path: ".env.local"}); 
 
 export interface SessionData {
   step: string;
 }
-
 interface MyContext extends Context, SessionFlavor<SessionData> {}
 
 const greyBotToken: string = process.env.GREY_BOT_API_TOKEN as string;
-const telegramUrl: string = process.env.TELEGRAM_URL as string;
 
-// Check if required environment variables exist
-if (!greyBotToken || greyBotToken.trim() === '') {
-  throw new Error('Empty token! GREY_BOT_API_TOKEN environment variable is not set or is empty.');
-}
-
-if (!telegramUrl || telegramUrl.trim() === '') {
-  throw new Error('TELEGRAM_URL environment variable is not set or is empty.');
-}
-
-export const greybotWebhook: string = `${telegramUrl}/api/zipha_bot`;
+export const greybotWebhook: string =  `${process.env.TELEGRAM_URL}/api/zipha_bot`;
 export const Greybot = new Bot<MyContext>(greyBotToken);
 
 /**
@@ -59,4 +49,4 @@ export async function setWebhook(): Promise<any> {
       console.log("✅ Webhook is already set to the correct URL.");
       return currentWebhook;
     }
-  } 
+  }

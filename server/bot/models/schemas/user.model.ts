@@ -1,51 +1,49 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, model, Document } from "mongoose";
 
-const userSchema = new mongoose.Schema({
-  userId: {
-    type: Number,
-    required: true,
-    unique: true
+interface Subscription {
+  type: string;
+  expirationDate: number; // Stored as timestamp (milliseconds)
+  status: string;
+}
+
+interface InviteLink {
+  link: string;
+  name: string;
+}
+
+interface GroupMembership {
+  groupId: number;
+  joinedAt: Date;
+}
+
+interface IUser extends Document {
+  userId: number;
+  username?: string;
+  fullName?: string;
+  subscription?: Subscription;
+  inviteLink?: InviteLink;
+  groupMembership?: GroupMembership;
+}
+
+const UserSchema = new Schema<IUser>({
+  userId: { type: Number, unique: true, required: true },
+  username: { type: String },
+  fullName: { type: String },
+  subscription: {
+    type: Object,
+    default: {},
   },
-  username: {
-    type: String,
-    required: false
+  inviteLink: {
+    type: Object,
+    default: {},
   },
-  firstName: {
-    type: String,
-    required: false
+  groupMembership: {
+    type: Object,
+    default: {},
   },
-  lastName: {
-    type: String,
-    required: false
-  },
-  subscriptionStatus: {
-    type: String,
-    default: "inactive",
-    enum: ["active", "inactive", "expired", "pending"]
-  },
-  subscriptionType: {
-    type: String,
-    default: ""
-  },
-  expirationDate: {
-    type: Number,
-    required: false
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
 });
 
-userSchema.pre("save", function(next) {
-  this.updatedAt = new Date();
-  next();
-});
+// ✅ Use `mongoose.models` instead of `models`
+// const User =
 
-const UserModel = mongoose.models.User || mongoose.model("User", userSchema);
-
-export default UserModel; 
+export default  mongoose.models["telegram-bot-users"] || model<IUser>("telegram-bot-users", UserSchema);

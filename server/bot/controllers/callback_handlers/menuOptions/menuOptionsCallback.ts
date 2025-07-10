@@ -7,7 +7,8 @@ import { appealCallback } from "../menuButtonsCallback/apeal/appealCallback";
 import { cancleCallback } from "../menuButtonsCallback/cancel/cancelCallback";
 import { handleOptionAction } from "./optionActionHandler";
 import { handleError } from "./errorHandler";
-import Coupon from "../../../models/couponClass";
+import Coupon from "server/bot/models/couponClass";
+import { console } from "inspector";
 
 const couponInstance = Coupon.getInstance();
 
@@ -45,11 +46,11 @@ export async function menuOptionsCallback(ctx: Context): Promise<void> {
         ;
         break;
       case "appeal":
-        await appealCallback(ctx);
+        await appealCallback(ctx, Number(uniqueId), action, Number(messageIdCount));
         break;
       case "cancel":
       case "cancleCoupon":
-        await cancleCallback(ctx);
+        await cancleCallback(ctx,Number(uniqueId), action);
         break;
       case "codeList":
         await couponInstance.getActiveCoupon(ctx);
@@ -60,4 +61,4 @@ export async function menuOptionsCallback(ctx: Context): Promise<void> {
     console.error("Error handling request:", error);
     await handleError(ctx, error);
   }
-} 
+}

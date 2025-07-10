@@ -1,11 +1,10 @@
 import { Document } from "mongoose";
 import CatchMechanism from "./catchMechanism";
-import { userInfoSingletonInstance } from "./userInfoSingleton";
+import { createUserInstance } from "./userInfoSingleton";
 import { Navigation } from "../controllers/navigation/navigationClass";
 import screenshotStorage from "../controllers/navigation/screenshotStorageClass";
 
 const navigation = Navigation.getInstance();
-
 export interface ICatchMechanism {
   userMenu: any;
   userManagement: any;
@@ -14,6 +13,7 @@ export interface ICatchMechanism {
   // createdAt?: Date;
   // updatedAt?: Date;
 }
+
 
 class CatchMechanismClass {
   private static instance: CatchMechanismClass;
@@ -72,7 +72,7 @@ class CatchMechanismClass {
   async addCatchMechanism(userId: number): Promise<ICatchMechanism | null> {
     try {
       const userMenuData = await navigation.getSingleUserMenu(userId);
-      const userManagementData = await userInfoSingletonInstance.getUserManagementData(userId);
+      const userManagementData = await createUserInstance.getUserManagementData(userId);
       const screenshotStorageData = await screenshotStorage.getScreenshotStorageData(userId);
 
       const updates = {
@@ -94,7 +94,7 @@ class CatchMechanismClass {
 
   async updateUserCatchClasses(user: ICatchMechanism): Promise<void> {
     await navigation.addAllUsersToMenu([user.userMenu]);
-          await userInfoSingletonInstance.addMultipleUsers([user.userManagement]);
+    await createUserInstance.addMultipleUsers([user.userManagement]);
     await screenshotStorage.addAllUsers([user.screenshotStorage]);
   }
 
@@ -130,7 +130,7 @@ class CatchMechanismClass {
     );
   }
 
-  async updateUserManagement(userId: number, userManagementUpdates: any): Promise<void> {
+  async updateUserManagement(userId: SVGAnimatedNumber, userManagementUpdates: any): Promise<void> {
     await this.CatchMechanismModel.findOneAndUpdate(
       { userId },
       { $set: { userManagement: userManagementUpdates } },
@@ -166,4 +166,4 @@ class CatchMechanismClass {
   }
 }
 
-export default CatchMechanismClass; 
+export default CatchMechanismClass;
