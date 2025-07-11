@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { getGreybot, initializeGreybot } from "server/bot/config/initBot";
 import { rateLimiterMiddleware } from "server/bot/config/rateLimiter";
+import { autoRetry } from "@grammyjs/auto-retry";
+import { Bot } from "grammy";
 
 
 // Ensure the bot token exists
@@ -13,11 +15,31 @@ initializeGreybot().catch(console.error);
 
 export async function POST(req: NextRequest) {
   try {
+    // Step 1: Get the Bot Token
+    const token = process.env.GREY_BOT_API_TOKEN;
+    if (!token) {
+      throw new Error("GREY_BOT_API_TOKEN is not configured in Vercel!");
+    }
+
+    // Step 2: Create a Fresh Bot Instance on EVERY request
+    const Greybot = new Bot(token, {
+      client: {
+        // Add a timeout to prevent Vercel network errors
+        timeoutSeconds: 10,
+      }
+    });
+
+    // Step 3: Apply Plugins
+    // This makes your bot automatically retry failed requests
+    Greybot.api.config.use(autoRetry());
+
+    // Step 4: Initialize the Bot (The CRITICAL step for Vercel)
+    // This fetches the bot's info and makes it ready to process messages.
+    await Greybot.init();
     const body = await req.json();
     // console.log("🚀 Incoming Telegram Update:", JSON.stringify(body, null, 2));
     console.log("🚀 Incoming Telegram Update:")
-// ✅ SOLUTION: Initialize the bot on every request
-    await getGreybot().init();
+
     const rateLimitResponse = await rateLimiterMiddleware(req);
     if (rateLimitResponse) return rateLimitResponse;
     // 🛠️ Manually Handle Update Instead of `webhookCallback`
