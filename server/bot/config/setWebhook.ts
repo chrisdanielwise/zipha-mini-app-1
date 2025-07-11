@@ -9,7 +9,7 @@ export interface SessionData {
 }
 interface MyContext extends Context, SessionFlavor<SessionData> {}
 
-const greybotWebhook: string =  `${process.env.TELEGRAM_URL}api/zipha_bot`;
+const greybotWebhook: string =  `${process.env.TELEGRAM_URL}/api/zipha_bot`;
 let greybotInstance: Bot<MyContext> | null = null;
 
 export function getGreybot(): Bot<MyContext> {
