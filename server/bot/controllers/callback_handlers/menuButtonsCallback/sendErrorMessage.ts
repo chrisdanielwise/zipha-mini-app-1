@@ -1,12 +1,24 @@
 import { Context } from "grammy";
+import { retryApiCall } from "server/bot/config/utilities";
 
-export async function sendError(ctx: Context, message: string): Promise<void> {
-  try {
-    await ctx.answerCallbackQuery({
-      text: message,
-      show_alert: true,
-    });
-  } catch (error) {
-    console.error("Error sending error message:", error);
+export async function sendError(ctx: Context, text: string): Promise<void> {
+  if (!ctx.update || !ctx.update.callback_query) {
+    console.error("Missing callback query or update context");
+    return;
   }
-} 
+
+  // const callbackQueryId = ctx.update.callback_query.id;
+
+  try {
+    await retryApiCall(() =>
+      ctx.answerCallbackQuery({
+        // callback_query_id: callbackQueryId,
+        text: `An unexpected error occurred. Please try again later:${text}`,
+        show_alert: true,
+      })
+    );
+  } catch (error: any) {
+    console.error("Error sending error message:", error);
+    // Optional: Send error report to administrator
+  }
+}
