@@ -1,8 +1,8 @@
 import { Bot, Context, SessionFlavor } from "grammy";
+import { autoRetry } from "@grammyjs/auto-retry"; // 👈 1. Import the plugin
 import dotenv from "dotenv";
 
-
-dotenv.config({ path: ".env.local"}); 
+dotenv.config({ path: ".env.local"});
 
 export interface SessionData {
   step: string;
@@ -16,7 +16,16 @@ export function getGreybot(): Bot<MyContext> {
   if (!greybotInstance) {
     const greyBotToken: string = process.env.GREY_BOT_API_TOKEN as string;
     if (!greyBotToken) throw new Error('❌ Bot token is missing. Check your .env file.');
-    greybotInstance = new Bot<MyContext>(greyBotToken);
+
+    // Create the bot instance with the timeout
+    greybotInstance = new Bot<MyContext>(greyBotToken, {
+      client: {
+        timeoutSeconds: 10,
+      },
+    });
+
+    // 👇 2. Apply the auto-retry plugin right after creation
+    greybotInstance.api.config.use(autoRetry());
   }
   return greybotInstance;
 }
