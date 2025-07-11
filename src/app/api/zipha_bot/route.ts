@@ -16,7 +16,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     // console.log("🚀 Incoming Telegram Update:", JSON.stringify(body, null, 2));
     console.log("🚀 Incoming Telegram Update:")
-
+// ✅ SOLUTION: Initialize the bot on every request
+    await getGreybot().init();
     const rateLimitResponse = await rateLimiterMiddleware(req);
     if (rateLimitResponse) return rateLimitResponse;
     // 🛠️ Manually Handle Update Instead of `webhookCallback`

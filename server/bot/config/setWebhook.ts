@@ -8,9 +8,10 @@ export interface SessionData {
   step: string;
 }
 interface MyContext extends Context, SessionFlavor<SessionData> {}
-
 const greybotWebhook: string =  `${process.env.TELEGRAM_URL}/api/zipha_bot`;
 let greybotInstance: Bot<MyContext> | null = null;
+const greyBotToken: string = process.env.GREY_BOT_API_TOKEN as string;
+export const Greybot = new Bot<MyContext>(greyBotToken);
 
 export function getGreybot(): Bot<MyContext> {
   if (!greybotInstance) {
