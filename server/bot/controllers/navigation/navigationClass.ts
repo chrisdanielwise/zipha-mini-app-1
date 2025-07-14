@@ -40,15 +40,15 @@ export class Navigation {
       throw new Error("Chat ID not found");
     }
     const userId: number = ctx.chat.id;
-    let userMenuOptions = this.userMenuOptions.get(userId)!;
-    if (!this.userMenuOptions.has(userId)) {
-      this.userMenuOptions.set(userId, {
+    let userMenuOptions = this.userMenuOptions.get(userId);
+    if (!userMenuOptions) {
+      userMenuOptions = {
         stack: [],
         previousMenuMessageId: new Map<string, number>(),
         faqIndex: 0,
         inviteLinkId: null,
-      });
-      userMenuOptions = this.userMenuOptions.get(userId)!;
+      };
+      this.userMenuOptions.set(userId, userMenuOptions);
     }
     const stack = userMenuOptions.stack;
     const previousMenuMessageId = userMenuOptions.previousMenuMessageId;
@@ -191,18 +191,21 @@ export class Navigation {
   async updateMenu(ctx: any, options: any): Promise<void> {
     try {
       const userId: number = ctx?.chat?.id;
-      const userMenuOptions = this.userMenuOptions.get(userId)!;
-      const currentOption = userMenuOptions.stack[userMenuOptions.stack.length - 1];
-
-      if (!this.userMenuOptions.has(userId)) {
-        this.userMenuOptions.set(userId, {
+      
+      // ✅ Safety Check: Ensure userMenuOptions exists before using it.
+      let userMenuOptions = this.userMenuOptions.get(userId);
+      if (!userMenuOptions) {
+        console.log(`Initializing menu options for new user: ${userId}`);
+        userMenuOptions = {
           stack: [],
           previousMenuMessageId: new Map<string, number>(),
-          faqIndex: 0, // Added required property
+          faqIndex: 0,
           inviteLinkId: null,
-        });
-        this.menuMessageId = null;
+        };
+        this.userMenuOptions.set(userId, userMenuOptions);
       }
+
+      const currentOption = userMenuOptions.stack[userMenuOptions.stack.length - 1];
       
       const chatInfo = await ctx.api.getChat(ctx.chat?.id);
       this.menuMessageId = chatInfo.last_message?.message_id ?? null;
@@ -235,9 +238,20 @@ export class Navigation {
       const messageText =
         groupInfo[optionStr] ??
         `<code>     </code><b>${optionStr} section!</b><code>     </code>`;
-      const keyboard = generateInlineKeyboard(getMenuOptions(optionStr, userId));
       
-      // ✅ CORRECTED CODE: This is the only property needed for an inline keyboard.
+      // ✅ Diagnostic Logging: See what data we're working with.
+      console.log(`[updateMenu] User: ${userId}, Option: "${optionStr}"`);
+      const menuLayout = getMenuOptions(optionStr, userId);
+      console.log(`[updateMenu] Fetched Menu Layout:`, JSON.stringify(menuLayout, null, 2));
+      
+      const keyboard = generateInlineKeyboard(menuLayout);
+      console.log(`[updateMenu] Generated Keyboard:`, JSON.stringify(keyboard, null, 2));
+
+      // Safety check for empty keyboard
+      if (!keyboard || keyboard.length === 0) {
+        console.warn(`[updateMenu] Warning: Generated an empty keyboard for option "${optionStr}". Sending message without buttons.`);
+      }
+
       const replyMarkup = {
         inline_keyboard: keyboard,
       };
@@ -245,7 +259,7 @@ export class Navigation {
       if (this.menuMessageId) {
         await ctx.api.editMessageText(ctx.chat.id, this.menuMessageId, messageText, {
           reply_markup: replyMarkup,
-          parse_mode: "HTML", // Also good to be explicit here
+          parse_mode: "HTML",
         });
       } else {
         const message = await ctx.reply(messageText, {
@@ -286,7 +300,7 @@ export class Navigation {
         this.menuMessageId = null;
       }
     } catch (error) {
-      console.log(error);
+      console.log("❌ DETAILED ERROR in updateMenu:", error); // ✅ More detailed error logging
       ctx.reply("An error occurred while updating the menu.");
     }
   }
