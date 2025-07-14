@@ -15,21 +15,15 @@ import { menuOptionsCallback } from "./controllers/callback_handlers/menuOptions
 import { handlePollAnswer } from "./controllers/callback_handlers/handlePoll/handlePollAnswer";
 import { checkSubscription } from "./controllers/callback_handlers/channelHandlers/handleSubscription/checkSubscriptionStatus";
 
+// Define a shared context type (can be moved to a types.ts file)
 interface SessionData {
   step: string;
 }
-
+export type MyContext = Context & SessionFlavor<SessionData>;
 // This function now accepts the bot instance as an argument
 export function setupBot(bot: Bot<Context & SessionFlavor<SessionData>>): void {
   const navigation = Navigation.getInstance();
   const channelId = Number(process.env.VIP_SIGNAL_ID);
-
-  // Add session middleware
-  bot.use(
-    session<SessionData>({
-      initial: () => ({ step: "idle" }),
-    })
-  );
 
   // Register all event handlers
   bot.on("chat_member", handleChatMember);

@@ -50,8 +50,8 @@ async function main() {
   console.log("✅ Custom settings and services initialized.");
   // ✅ ======================================================================
 
-  // 5. Set up a global error handler for the bot
-  bot.catch(handleBotError);
+ // 5. Set up a global error handler for the bot.
+  bot.catch((err) => handleBotError(err, bot));
 
   // 6. Start the bot using Long Polling
   // This will run forever and fetch updates from Telegram.
@@ -60,8 +60,8 @@ async function main() {
 }
 
 // Run the main function and catch any fatal startup errors
+// Run the main function and catch any fatal startup errors
 main().catch((err) => {
-    handleBotError(err);
-    // Optional: exit the process after a fatal startup error
-    // process.exit(1);
+    handleBotError(err, new Bot(process.env.GREY_BOT_API_TOKEN || ''));
+    process.exit(1);
 });

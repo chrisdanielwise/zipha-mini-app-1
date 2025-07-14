@@ -7,26 +7,23 @@ admin if the bot crashes.
 */
 import os from "os";
 import process from "process";
-import { Bot, BotError } from "grammy";
+import { Bot, BotError, Context, SessionFlavor } from "grammy";
+import { MyContext } from "../setup";
 
 const ADMIN_ID = process.env.ADMIN_ID;
 const BOT_NAME = process.env.USER_NAME || "Zipha Bot";
-const botToken = process.env.GREY_BOT_API_TOKEN;
 
-// A temporary, lightweight bot instance just for sending the error message
-const errorBot = botToken ? new Bot(botToken) : null;
-
-// This function will be the global error handler for the bot
-export async function handleBotError(err: unknown) {
+// This function now accepts the bot instance with the correct context type
+export async function handleBotError(err: unknown, bot: Bot<MyContext>) {
   console.error("❌ A critical error occurred:", err);
 
-  if (!ADMIN_ID || !errorBot) {
-    console.error("Admin ID or Bot Token not configured. Cannot send error report.");
+  if (!ADMIN_ID) {
+    console.error("Admin ID not configured. Cannot send error report.");
     return;
   }
 
   const error = err instanceof BotError ? err.error : err;
-  const ctx = err instanceof BotError ? err.ctx : undefined;
+  const ctx = err instanceof BotError ? (err.ctx as MyContext) : undefined;
   const errorMessage = error instanceof Error ? `${error.name}: ${error.message}\n${error.stack}` : "An unknown error occurred.";
 
   const cpuInfo = `${os.cpus()[0].model} (${os.cpus().length} cores)`;
@@ -55,7 +52,8 @@ ${ctx ? `**User:** ${ctx.from?.id} (@${ctx.from?.username})` : ''}
 `;
 
   try {
-    await errorBot.api.sendMessage(ADMIN_ID, systemInfo, { parse_mode: "Markdown" });
+    // Use the provided bot instance to send the message
+    await bot.api.sendMessage(ADMIN_ID, systemInfo, { parse_mode: "Markdown" });
     console.log("✅ Error report sent to admin.");
   } catch (e) {
     console.error("❌ Failed to send error report to admin:", e);
