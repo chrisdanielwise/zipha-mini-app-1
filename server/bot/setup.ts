@@ -16,7 +16,7 @@ import { handlePollAnswer } from "./controllers/callback_handlers/handlePoll/han
 import { checkSubscription } from "./controllers/callback_handlers/channelHandlers/handleSubscription/checkSubscriptionStatus";
 
 // Define a shared context type (can be moved to a types.ts file)
-interface SessionData {
+export interface SessionData {
   step: string;
 }
 export type MyContext = Context & SessionFlavor<SessionData>;

@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" }); // Ensure env vars are loaded first
 
-import { Bot } from "grammy";
+import { Bot, session } from "grammy";
 import { autoRetry } from "@grammyjs/auto-retry";
 import { connectDB } from "./config/connection";
-import { setupBot } from "./setup";
+import { MyContext, SessionData, setupBot } from "./setup";
 import { handleBotError } from "./config/erroHandler";
 import { settingsClass } from "./controllers/callback_handlers/settings/settingsClass";
 import CatchMechanismClass from "./models/catchMechanismClass";
@@ -23,13 +23,24 @@ async function main() {
     process.exit(1); // Exit if no token is found
   }
 
-  // 3. Create and Configure the Bot Instance
-  const bot = new Bot(token, {
+  // 3. Create and Configure the Bot Instance with the custom context type
+  const bot = new Bot<MyContext>(token, {
     client: {
-      // Set a timeout to make network requests more resilient
       timeoutSeconds: 10,
     },
   });
+
+  // ✅ ======================================================================
+  // ✅ CENTRALIZED INITIALIZATION & MIDDLEWARE
+  // ======================================================================
+
+  // Apply session middleware FIRST to add `ctx.session` to the context.
+  // This resolves the TypeScript error.
+  bot.use(
+    session<SessionData, MyContext>({
+      initial: () => ({ step: "idle" }),
+    })
+  );
 
   // Apply the auto-retry plugin for better network stability
   bot.api.config.use(autoRetry());
