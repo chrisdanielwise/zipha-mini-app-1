@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "bot": "npx tsx src/app/api/telegram/bot.ts"
+    "start:bot": "npx tsx server/bot/runner.ts" 
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
