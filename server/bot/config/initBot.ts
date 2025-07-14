@@ -33,7 +33,7 @@ async function initializeGreybot(): Promise<void> {
     await setWebhook();
 
     // Initialize handlers and load settings
-    await GreyBotHandler();
+    // await GreyBotHandler();
     const settings = settingsClass();
     // console.log(await settings.getSettings(),"settings ")
     await settings.getSettings();

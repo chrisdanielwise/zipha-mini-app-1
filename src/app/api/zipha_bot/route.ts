@@ -5,6 +5,7 @@ import { getGreybot, initializeGreybot } from "server/bot/config/initBot";
 import { rateLimiterMiddleware } from "server/bot/config/rateLimiter";
 import { autoRetry } from "@grammyjs/auto-retry";
 import { Bot } from "grammy";
+import { GreyBotHandler } from "server/bot/config/greybotHandler";
 
 
 // Ensure the bot token exists
@@ -12,7 +13,7 @@ const botToken = process.env.GREY_BOT_API_TOKEN;
 if (!botToken) throw new Error("GREY_BOT_API_TOKEN is missing!");
 initializeGreybot().catch(console.error);
   // Step 3: Make a request to Next.js API to wake up the server
-
+GreyBotHandler().catch(console.error)
 export async function POST(req: NextRequest) {
   try {
     // Step 1: Get the Bot Token
