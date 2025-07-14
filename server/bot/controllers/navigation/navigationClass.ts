@@ -236,14 +236,16 @@ export class Navigation {
         groupInfo[optionStr] ??
         `<code>     </code><b>${optionStr} section!</b><code>     </code>`;
       const keyboard = generateInlineKeyboard(getMenuOptions(optionStr, userId));
+      
+      // ✅ CORRECTED CODE: This is the only property needed for an inline keyboard.
       const replyMarkup = {
         inline_keyboard: keyboard,
-        resize_keyboard: true,
-        one_time_keyboard: true,
       };
+
       if (this.menuMessageId) {
         await ctx.api.editMessageText(ctx.chat.id, this.menuMessageId, messageText, {
           reply_markup: replyMarkup,
+          parse_mode: "HTML", // Also good to be explicit here
         });
       } else {
         const message = await ctx.reply(messageText, {
