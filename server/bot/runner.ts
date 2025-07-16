@@ -1,79 +1,58 @@
+// server/bot/runner.ts
 import dotenv from "dotenv";
-dotenv.config({ path: ".env.local" }); // Ensure env vars are loaded first
+dotenv.config({ path: ".env.local" });
 
 import { Bot, session } from "grammy";
 import { autoRetry } from "@grammyjs/auto-retry";
-import { connectDB } from "./config/connection";
 import { MyContext, SessionData, setupBot } from "./setup";
 import { handleBotError } from "./config/erroHandler";
-import { settingsClass } from "./controllers/callback_handlers/settings/settingsClass";
-import CatchMechanismClass from "./models/catchMechanismClass";
-import mongoose from "mongoose";
+import { initializeGreybot, getGreybot } from "./config/initBot"; //
 
 async function main() {
   console.log("Initializing bot...");
 
-  // 1. Connect to the Database
-  await connectDB();
+  // Call initializeGreybot to handle all core initializations:
+  // - Connect to the database.
+  // - Initialize the bot instance (getGreybot().init()).
+  // - Set the webhook (via setWebhook() inside initializeGreybot()).
+  // - Load initial settings and catch mechanism.
+  await initializeGreybot(); //
 
-  // 2. Get Bot Token
-  const token = process.env.GREY_BOT_API_TOKEN; 
+  // Get the single bot instance that has been initialized by initializeGreybot.
+  const bot = getGreybot(); //
+
+  // Basic check for bot token (should ideally be handled by getGreybot internally too)
+  const token = process.env.GREY_BOT_API_TOKEN;
   if (!token) {
     console.error("❌ GREY_BOT_API_TOKEN is not set in your environment variables!");
-    process.exit(1); // Exit if no token is found
+    process.exit(1);
   }
 
-  // 3. Create and Configure the Bot Instance with the custom context type
-  const bot = new Bot<MyContext>(token, {
-    client: {
-      timeoutSeconds: 10,
-    },
-  });
-
-  // ✅ ======================================================================
-  // ✅ CENTRALIZED INITIALIZATION & MIDDLEWARE
-  // ======================================================================
-
-  // Apply session middleware FIRST to add `ctx.session` to the context.
-  // This resolves the TypeScript error.
+  // Apply session middleware.
+  // Note: bot.api.config.use(autoRetry()) is already handled inside getGreybot().
   bot.use(
     session<SessionData, MyContext>({
       initial: () => ({ step: "idle" }),
     })
   );
 
-  // Apply the auto-retry plugin for better network stability
-  bot.api.config.use(autoRetry());
-
-
-
   console.log("✅ Bot logic and handlers have been registered.");
 
-  // ✅ ======================================================================
-  // ✅ ADD YOUR INITIALIZATION LOGIC HERE
-  // ✅ This runs after the bot and DB are ready, but before it starts listening.
-  // ✅ ======================================================================
-  const settings = settingsClass();
-  await settings.getSettings();
-  const catchMechanismInstance = CatchMechanismClass.getInstance(mongoose.connection);
-  await catchMechanismInstance.initialize();
-  console.log("✅ Custom settings and services initialized.");
-  // ✅ ======================================================================
+  // Register all your bot's logic, commands, and middleware.
+  setupBot(bot); //
+  
+  // Set up a global error handler for the bot.
+  bot.catch((err) => handleBotError(err, bot)); //
 
-    // 4. Register all your bot's logic, commands, and middleware
-  setupBot(bot);
- // 5. Set up a global error handler for the bot.
-  bot.catch((err) => handleBotError(err, bot));
-
-  // 6. Start the bot using Long Polling
-  // This will run forever and fetch updates from Telegram.
-  console.log("🚀 Starting bot with long polling...");
+  // Start the bot. If webhook is correctly set by initializeGreybot,
+  // this will allow the bot to receive updates via the webhook URL.
+  console.log("🚀 Bot is now running and listening for updates via webhook."); // Corrected log message
   await bot.start();
 }
 
 // Run the main function and catch any fatal startup errors
-// Run the main function and catch any fatal startup errors
 main().catch((err) => {
-    handleBotError(err, new Bot(process.env.GREY_BOT_API_TOKEN || ''));
+    // Pass the initialized bot for error handling.
+    handleBotError(err, getGreybot()); //
     process.exit(1);
 });
