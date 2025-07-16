@@ -67,7 +67,7 @@ const generateMenu = (adminUserId: number, userId: number): InlineButton[][] => 
     [{ text: "Partnership", callback_data: "partnership" }],
     [{ text: "Gift", callback_data: "gift_coupon" }],
     [{ text: "FAQ", callback_data: "faq" }],
-    [{ text: "Contact Support", url: process.env.CONTACT_SUPPORT }],
+    [{ text: "Contact Support", url: process.env.CONTACT_SUPPORT || "https://zipha-mini-app-git-master-chrisdanielwises-projects.vercel.app" }],
   ];
   if (userId === adminUserId) {
     mainMenuOptions.push([{ text: "Settings", callback_data: "settings" }]);
