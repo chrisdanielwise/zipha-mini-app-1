@@ -240,17 +240,17 @@ export class Navigation {
         `<code>     </code><b>${optionStr} section!</b><code>     </code>`;
       
       // ✅ Diagnostic Logging: See what data we're working with.
-      console.log(`[updateMenu] User: ${userId}, Option: "${optionStr}"`);
+      // console.log(`[updateMenu] User: ${userId}, Option: "${optionStr}"`);
       const menuLayout = getMenuOptions(optionStr, userId);
-      console.log(`[updateMenu] Fetched Menu Layout:`, JSON.stringify(menuLayout, null, 2));
+      // console.log(`[updateMenu] Fetched Menu Layout:`, JSON.stringify(menuLayout, null, 2));
       
       const keyboard = generateInlineKeyboard(menuLayout);
-      console.log(`[updateMenu] Generated Keyboard:`, JSON.stringify(keyboard, null, 2));
+      // console.log(`[updateMenu] Generated Keyboard:`, JSON.stringify(keyboard, null, 2));
 
       // Safety check for empty keyboard
-      if (!keyboard || keyboard.length === 0) {
-        console.warn(`[updateMenu] Warning: Generated an empty keyboard for option "${optionStr}". Sending message without buttons.`);
-      }
+      // if (!keyboard || keyboard.length === 0) {
+      //   console.warn(`[updateMenu] Warning: Generated an empty keyboard for option "${optionStr}". Sending message without buttons.`);
+      // }
 
       const replyMarkup = {
         inline_keyboard: keyboard,

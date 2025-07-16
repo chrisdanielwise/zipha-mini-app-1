@@ -25,6 +25,7 @@ export function setupBot(bot: Bot<Context & SessionFlavor<SessionData>>): void {
   const navigation = Navigation.getInstance();
   const channelId = Number(process.env.VIP_SIGNAL_ID);
 
+  
   // Register all event handlers
   bot.on("chat_member", handleChatMember);
   bot.on("message", handleMessages);

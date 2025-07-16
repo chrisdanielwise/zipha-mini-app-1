@@ -45,8 +45,7 @@ async function main() {
   // Apply the auto-retry plugin for better network stability
   bot.api.config.use(autoRetry());
 
-  // 4. Register all your bot's logic, commands, and middleware
-  setupBot(bot);
+
 
   console.log("✅ Bot logic and handlers have been registered.");
 
@@ -61,6 +60,8 @@ async function main() {
   console.log("✅ Custom settings and services initialized.");
   // ✅ ======================================================================
 
+    // 4. Register all your bot's logic, commands, and middleware
+  setupBot(bot);
  // 5. Set up a global error handler for the bot.
   bot.catch((err) => handleBotError(err, bot));
 
