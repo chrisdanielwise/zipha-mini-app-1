@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import LayoutWrapper from '../components/ui/LayoutWrapper';
+//import LayoutWrapper from '../components/ui/LayoutWrapper';
+import ProgressBarProvider from '../components/providers/ProgressBarProvider';
 // import { setWebhook } from 'server/bot/config/setWebhook';
 
 export const metadata: Metadata = {
@@ -16,12 +17,35 @@ export const metadata: Metadata = {
 //     .catch(console.error); // Log errors if any
 // } 
 
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const savedTheme = localStorage.getItem('theme');
+                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  
+                  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {
+                  // Fallback to light mode if error
+                  document.documentElement.classList.remove('dark');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-screen transition-colors duration-300">
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <ProgressBarProvider />
+        {children}
       </body>
     </html>
   );

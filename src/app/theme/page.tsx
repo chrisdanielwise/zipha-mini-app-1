@@ -4,6 +4,7 @@ import { memo, FC, useState } from "react";
 import Link from "next/link";
 import { MdArrowBackIos } from "react-icons/md";
 import Card from "../../components/ui/Card";
+import LayoutWrapper from "../../components/ui/LayoutWrapper";
 
 interface ToggleSwitchProps {
   label: string;
@@ -28,32 +29,34 @@ const ToggleSwitch: FC<ToggleSwitchProps> = ({ label, isActive, onToggle }) => {
   );
 };
 
-const Theme: FC = () => {
+const ThemePage: FC = () => {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   return (
-    <div className="flex flex-col gap-8 mt-4 max-w-xl mx-auto">
-      <div className="flex items-center gap-2 mb-2">
-        <Link href="/settings">
-          <MdArrowBackIos className="text-2xl text-water-dark hover:text-water-light transition" />
-        </Link>
-        <span className="text-2xl font-bold text-water-dark">Theme</span>
-      </div>
+    <LayoutWrapper>
+      <div className="flex flex-col gap-4 sm:gap-6 mt-4 w-full max-w-4xl mx-auto pb-8 px-2 sm:px-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Link href="/settings">
+            <MdArrowBackIos className="text-2xl text-water-dark hover:text-water-light transition" />
+          </Link>
+          <span className="text-2xl font-bold text-water-dark">Theme</span>
+        </div>
 
-      <Card className="flex flex-col gap-2 p-6">
-        <ToggleSwitch
-          label="Dark Mode"
-          isActive={theme === "dark"}
-          onToggle={() => setTheme("dark")}
-        />
-        <ToggleSwitch
-          label="Light Mode"
-          isActive={theme === "light"}
-          onToggle={() => setTheme("light")}
-        />
-      </Card>
-    </div>
+        <Card className="flex flex-col gap-2 p-6">
+          <ToggleSwitch
+            label="Dark Mode"
+            isActive={theme === "dark"}
+            onToggle={() => setTheme("dark")}
+          />
+          <ToggleSwitch
+            label="Light Mode"
+            isActive={theme === "light"}
+            onToggle={() => setTheme("light")}
+          />
+        </Card>
+      </div>
+    </LayoutWrapper>
   );
 };
 
-export default memo(Theme);
+export default memo(ThemePage);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { LineChart, Line, AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { DollarSign, TrendingUp, TrendingDown, Calendar, ChevronDown } from 'lucide-react';
 import WaterDropCard from './WaterDropCard';
 
@@ -162,25 +162,6 @@ export default function ProfitSection() {
       </WaterDropCard>
 
       {/* Quick Stats */}
-      <div className="space-y-6">
-        <WaterDropCard variant="elevated" className="text-center">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mx-auto mb-3 shadow-lg">
-            <DollarSign className="w-6 h-6 text-white" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">Average Subscription</h3>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">$45.20</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">+8% from last month</p>
-        </WaterDropCard>
-
-        <WaterDropCard variant="elevated" className="text-center">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mx-auto mb-3 shadow-lg">
-            <TrendingUp className="w-6 h-6 text-white" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">Growth Rate</h3>
-          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">+18.2%</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">vs last period</p>
-        </WaterDropCard>
-      </div>
     </div>
   );
 } 

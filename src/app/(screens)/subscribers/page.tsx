@@ -16,7 +16,10 @@ import {
 import { FaUsers, FaUserCheck, FaUserClock, FaUserTimes } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useProgress } from "../../../hooks/useProgress";
 import WaterDropCard from "../../../components/ui/WaterDropCard";
+import MobileTable from "../../../components/ui/MobileTable";
+import SubscriberActionModal from "../../../components/ui/SubscriberActionModal";
 
 interface Subscriber {
   _id: string;
@@ -43,21 +46,32 @@ const SubscribersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "cancelled" | "expired">("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null);
   const itemsPerPage = 20;
+  const progress = useProgress();
 
   // Fetch subscribers data
   const fetchSubscribers = async () => {
     try {
       setLoading(true);
+      progress.start();
+      
       const response = await fetch("/api/subscribers");
+      progress.set(0.6);
+      
       const data = await response.json();
+      progress.set(0.9);
       
       if (response.ok && data.success) {
         setSubscribers(data.subscribers || []);
+        progress.finish();
       } else {
+        progress.finish();
         toast.error("Failed to fetch subscribers");
       }
     } catch (error) {
+      progress.finish();
       console.error("Error fetching subscribers:", error);
       toast.error("Error fetching subscribers");
     } finally {
@@ -164,6 +178,44 @@ const SubscribersPage = () => {
     return subscriber.username || "Unknown";
   };
 
+  const handleActionClick = (subscriber: Subscriber) => {
+    setSelectedSubscriber(subscriber);
+    setIsModalOpen(true);
+  };
+
+  const handleModalAction = (action: string, subscriber: Subscriber) => {
+    console.log(`${action} action for:`, subscriber);
+    // Handle different actions here
+    switch (action) {
+      case 'view':
+        // Navigate to profile or show profile modal
+        toast.info(`Viewing profile for ${subscriber.username}`);
+        break;
+      case 'edit':
+        // Open edit modal or navigate to edit page
+        toast.info(`Editing ${subscriber.username}`);
+        break;
+      case 'message':
+        // Open message modal or navigate to messaging
+        toast.info(`Sending message to ${subscriber.username}`);
+        break;
+      case 'suspend':
+        // Toggle account status
+        const newStatus = subscriber.subscription.status === 'active' ? 'suspended' : 'active';
+        toast.success(`Account ${newStatus} for ${subscriber.username}`);
+        break;
+      case 'delete':
+        // Show confirmation then delete
+        toast.error(`Deleting ${subscriber.username}`);
+        break;
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedSubscriber(null);
+  };
+
   return (
     <div className="flex flex-col gap-8 mt-4 max-w-7xl mx-auto pb-8">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -175,7 +227,8 @@ const SubscribersPage = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Desktop - 4 separate cards */}
+      <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <WaterDropCard>
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
@@ -221,6 +274,118 @@ const SubscribersPage = () => {
           <div className="flex-1">
             <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Active Rate</h3>
             <p className="text-2xl font-bold text-gray-800 dark:text-white mb-3">{stats.activeRate}%</p>
+          </div>
+        </WaterDropCard>
+      </div>
+
+      {/* Mobile - Single combined card */}
+      <div className="md:hidden">
+        <WaterDropCard>
+          {/* Header with gradient background */}
+          <div className="relative mb-6 p-4 -m-4 rounded-xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-blue-500/5 dark:from-blue-400/10 dark:via-purple-400/10 dark:to-blue-400/10 border border-blue-200/20 dark:border-blue-700/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold bg-gradient-to-r from-blue-700 to-blue-600 dark:from-blue-300 dark:to-blue-400 bg-clip-text text-transparent mb-1">
+                  Subscriber Overview
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Real-time subscription metrics</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
+                <FaUsers className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Main Stats Grid */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Total Subscribers */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 p-4 rounded-xl border border-blue-200/50 dark:border-blue-700/50 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-md">
+                    <FaUsers className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Total</p>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.total}</p>
+                  </div>
+                </div>
+                <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-1.5">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-600 h-1.5 rounded-full" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Subscribers */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-4 rounded-xl border border-green-200/50 dark:border-green-700/50 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                    <FaUserCheck className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Active</p>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.active}</p>
+                  </div>
+                </div>
+                <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-1.5">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-1.5 rounded-full" style={{ width: `${stats.total > 0 ? (stats.active / stats.total) * 100 : 0}%` }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pending Subscribers */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 p-4 rounded-xl border border-yellow-200/50 dark:border-yellow-700/50 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center shadow-md">
+                    <FaUserClock className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 uppercase tracking-wider">Pending</p>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.pending}</p>
+                  </div>
+                </div>
+                <div className="w-full bg-yellow-200 dark:bg-yellow-800 rounded-full h-1.5">
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-600 h-1.5 rounded-full" style={{ width: `${stats.total > 0 ? (stats.pending / stats.total) * 100 : 0}%` }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Rate */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-4 rounded-xl border border-purple-200/50 dark:border-purple-700/50 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-md">
+                    <span className="text-sm font-bold text-white">%</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Active Rate</p>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.activeRate}%</p>
+                  </div>
+                </div>
+                <div className="w-full bg-purple-200 dark:bg-purple-800 rounded-full h-1.5">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-600 h-1.5 rounded-full" style={{ width: `${stats.activeRate}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Summary */}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-gray-600 dark:text-gray-300">Live tracking</span>
+              </div>
+              <div className="text-gray-500 dark:text-gray-400">
+                Updated now
+              </div>
+            </div>
           </div>
         </WaterDropCard>
       </div>
@@ -282,91 +447,133 @@ const SubscribersPage = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentSubscribers.map((subscriber) => (
-              <div
-                key={subscriber._id}
-                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
-                      <span className="text-white text-lg font-semibold">
-                        {getDisplayName(subscriber).charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-800 dark:text-white">
-                        {getDisplayName(subscriber)}
-                      </h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        @{subscriber.username}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <MdMoreVert className="w-5 h-5" />
-                  </button>
-                </div>
+          <>
+            {/* Mobile Table View */}
+            <div className="md:hidden">
+              <MobileTable 
+                subscribers={currentSubscribers}
+                onActionClick={handleActionClick}
+              />
+            </div>
 
-                {/* Contact Info */}
-                <div className="space-y-2 mb-4">
-                  {subscriber.email && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                      <MdEmail className="w-4 h-4 text-gray-400" />
-                      <span className="truncate">{subscriber.email}</span>
-                    </div>
-                  )}
-                  {subscriber.phoneNumber && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                      <MdPhone className="w-4 h-4 text-gray-400" />
-                      <span>{subscriber.phoneNumber}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Subscription Details */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Plan</span>
-                    <span className="text-sm text-gray-800 dark:text-white font-semibold">
-                      {subscriber.subscription.plan || "Standard"}
-                    </span>
-                  </div>
-                  {subscriber.subscription.amount && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount</span>
-                      <span className="text-sm text-gray-800 dark:text-white font-semibold">
-                        {subscriber.subscription.currency || "$"}{subscriber.subscription.amount}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Status */}
-                <div className="flex items-center justify-between mb-4">
-                  <span className={getStatusBadge(subscriber.subscription.status)}>
-                    {getStatusIcon(subscriber.subscription.status)}
-                    {subscriber.subscription.status.charAt(0).toUpperCase() + subscriber.subscription.status.slice(1)}
-                  </span>
-                </div>
-
-                {/* Footer */}
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <MdCalendarToday className="w-3 h-3" />
-                      <span>Joined {formatDate(subscriber.createdAt)}</span>
-                    </div>
-                    {subscriber.lastActive && (
-                      <span>Active {formatDate(subscriber.lastActive)}</span>
-                    )}
-                  </div>
-                </div>
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-900/50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Subscriber
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Contact
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Plan
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Amount
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Joined
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {currentSubscribers.map((subscriber) => (
+                      <tr key={subscriber._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                              <span className="text-white text-sm font-semibold">
+                                {getDisplayName(subscriber).charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-800 dark:text-white">
+                                {getDisplayName(subscriber)}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                @{subscriber.username}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            {subscriber.email && (
+                              <div className="flex items-center gap-1 text-sm text-gray-800 dark:text-white">
+                                <MdEmail className="w-4 h-4 text-gray-400" />
+                                <span className="truncate max-w-[150px]">{subscriber.email}</span>
+                              </div>
+                            )}
+                            {subscriber.phoneNumber && (
+                              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <MdPhone className="w-4 h-4 text-gray-400" />
+                                <span>{subscriber.phoneNumber}</span>
+                              </div>
+                            )}
+                            {!subscriber.email && !subscriber.phoneNumber && (
+                              <span className="text-sm text-gray-400 dark:text-gray-500">No contact info</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-800 dark:text-white">
+                            {subscriber.subscription.plan || "Standard"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {subscriber.subscription.amount ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm font-medium text-gray-800 dark:text-white">
+                                {subscriber.subscription.currency || "$"}{subscriber.subscription.amount}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={getStatusBadge(subscriber.subscription.status)}>
+                            {getStatusIcon(subscriber.subscription.status)}
+                            {subscriber.subscription.status.charAt(0).toUpperCase() + subscriber.subscription.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1">
+                            <MdCalendarToday className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-800 dark:text-white">
+                              {formatDate(subscriber.createdAt)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <button className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                              <MdPerson className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleActionClick(subscriber)}
+                              className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              <MdMoreVert className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
-          </div>
+            </div>
+          </>
         )}
 
         {/* Simple Pagination */}
@@ -394,6 +601,14 @@ const SubscribersPage = () => {
           </div>
         )}
       </WaterDropCard>
+
+      {/* Action Modal */}
+      <SubscriberActionModal
+        isOpen={isModalOpen}
+        subscriber={selectedSubscriber}
+        onClose={closeModal}
+        onAction={handleModalAction}
+      />
     </div>
   );
 };

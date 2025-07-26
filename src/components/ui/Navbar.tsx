@@ -1,4 +1,4 @@
-import { FaBell, FaBars, FaSun, FaMoon } from 'react-icons/fa';
+import { FaBell, FaBars, FaSun, FaMoon, FaSignOutAlt } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 
 interface NavbarProps {
@@ -9,17 +9,22 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check for saved theme preference or default to light mode
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDark(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDark(false);
-      document.documentElement.classList.remove('dark');
-    }
+    // Sync with already initialized theme (no flashing)
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkMode);
+
+    // Listen for theme changes from other components
+    const observer = new MutationObserver(() => {
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      setIsDark(isDarkMode);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   const toggleTheme = () => {
@@ -51,8 +56,8 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
         <span className="ml-4 text-lg font-semibold text-gray-600 dark:text-gray-300 hidden sm:inline">Dashboard</span>
       </div>
       
-      {/* Right side - Theme, notifications, profile */}
-      <div className="flex items-center gap-4">
+      {/* Right side - Theme, notifications, logout, profile */}
+      <div className="flex items-center gap-2 sm:gap-4">
 
         {/* Theme toggle */}
         <button
@@ -61,42 +66,50 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
           aria-label="Toggle theme"
         >
           {isDark ? (
-            <FaSun className="text-xl text-yellow-500" />
+            <FaSun className="text-lg sm:text-xl text-yellow-500" />
           ) : (
-            <FaMoon className="text-xl text-gray-700" />
+            <FaMoon className="text-lg sm:text-xl text-gray-700" />
           )}
         </button>
 
         {/* Notifications */}
         <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-          <FaBell className="text-xl text-gray-700 dark:text-gray-300" />
+          <FaBell className="text-lg sm:text-xl text-gray-700 dark:text-gray-300" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+
+        {/* Desktop Logout Button */}
+        <button 
+          className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all duration-200 font-medium text-sm"
+          onClick={() => {
+            // Handle logout logic here
+            console.log('Logout clicked');
+          }}
+        >
+          <FaSignOutAlt className="text-sm" />
+          <span>Logout</span>
         </button>
 
         {/* User Profile */}
         <div className="relative group">
-          <button className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg hover:shadow-xl transition">
-            <span className="text-lg font-bold text-white">U</span>
+          <button className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg hover:shadow-xl transition">
+            <span className="text-sm sm:text-lg font-bold text-white">U</span>
           </button>
-          <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
               <p className="text-sm font-medium text-gray-900 dark:text-white">Admin User</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">admin@zipha.com</p>
             </div>
             <div className="py-2">
-              <a href="/userprofile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+              <a href="/userprofile" className="block px-3 sm:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 Profile Settings
               </a>
-              <a href="/settings" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+              <a href="/settings" className="block px-3 sm:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 Account Settings
               </a>
-              <a href="/paymentsettings" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+              <a href="/paymentsettings" className="block px-3 sm:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 Payment Settings
               </a>
-              <hr className="my-2 border-gray-200 dark:border-gray-700" />
-              <button className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                Sign Out
-              </button>
             </div>
           </div>
         </div>

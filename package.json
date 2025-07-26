@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "start:bot": "npx tsx server/bot/runner.ts" 
+    "start:bot": "npx tsx server/bot/runner.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -19,6 +19,7 @@
     "@octokit/rest": "^21.1.1",
     "@tanstack/react-table": "^8.21.3",
     "@twa-dev/sdk": "^8.0.2",
+    "@types/nprogress": "^0.2.3",
     "axios": "^1.7.9",
     "bottleneck": "^2.19.5",
     "chart.js": "^4.4.7",
@@ -38,6 +39,7 @@
     "next": "15.1.7",
     "next-auth": "^4.24.11",
     "node-schedule": "^2.1.1",
+    "nprogress": "^0.2.0",
     "rate-limiter-flexible": "^6.1.0",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
