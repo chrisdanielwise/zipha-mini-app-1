@@ -1,4 +1,3 @@
-import './globals.css';
 import type { Metadata } from 'next';
 //import LayoutWrapper from '../components/ui/LayoutWrapper';
 import ProgressBarProvider from '../components/providers/ProgressBarProvider';
@@ -7,7 +6,15 @@ import ProgressBarProvider from '../components/providers/ProgressBarProvider';
 export const metadata: Metadata = {
   title: 'Zipha Dashboard',
   description: 'Modern water droplet morphism dashboard',
-};
+}
+// app/layout.tsx
+import { ReactNode } from 'react';
+import "./globals.css";
+// import '../types/telegram-webapp.d.ts';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { setWebhook } from 'server/bot/config/setWebhook';
+
 
 // if (!(global as any).__BOT_INITIALIZED__) {
 //   setWebhook() 

@@ -41,7 +41,7 @@ interface Subscriber {
 }
 
 const SubscribersPage = () => {
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+ const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "cancelled" | "expired">("all");
@@ -51,38 +51,87 @@ const SubscribersPage = () => {
   const itemsPerPage = 20;
   const progress = useProgress();
 
-  // Fetch subscribers data
-  const fetchSubscribers = async () => {
-    try {
-      setLoading(true);
-      progress.start();
-      
-      const response = await fetch("/api/subscribers");
-      progress.set(0.6);
-      
-      const data = await response.json();
-      progress.set(0.9);
-      
-      if (response.ok && data.success) {
-        setSubscribers(data.subscribers || []);
-        progress.finish();
-      } else {
-        progress.finish();
-        toast.error("Failed to fetch subscribers");
+  // Helper function to format the raw subscriber data
+  const getFormattedSubscribers = (rawSubscribers: any): Subscriber[] => {
+    return rawSubscribers.map((user: any, index: number) => {
+      let amount = "$0"; // Default amount
+
+      // Determine amount based on subscription type
+      switch (user.subscription?.type) {
+        case "one_month":
+          amount = `$${63}`;
+          break;
+        case "three_months":
+          amount = `$${160}`;
+          break;
+        case "six_months":
+          amount = `$${300}`;
+          break;
+        case "twelve_months":
+          amount = `$${500}`;
+          break;
+        case "mentorship_price_list":
+          amount = "$300";
+          break;
+        case "one_on_one_price_list":
+          amount = "$1100";
+          break;
+        case "bootcamp_payment":
+          amount = "$79.99";
+          break;
+        case "$10,000 - $49,000":
+          amount = "$1000";
+          break;
+        default:
+          amount = "$0"; // Keep default for unknown or negotiated types
+          break;
       }
-    } catch (error) {
-      progress.finish();
-      console.error("Error fetching subscribers:", error);
-      toast.error("Error fetching subscribers");
-    } finally {
-      setLoading(false);
-    }
+
+      return {
+        id: index + 1,
+        name: user.fullName || "No name",
+        username: user.username || "No username",
+        amount: amount,
+        service: user.subscription?.type || "None",
+        status: user.subscription?.status || "Unknown",
+        date: user.groupMembership.joinedAt
+          ? new Date(user.groupMembership.joinedAt).toLocaleDateString("en-GB")
+          : "N/A",
+        payment: "Unknown",
+      };
+    });
   };
 
+  // Effect to fetch and format subscribers when the component mounts
   useEffect(() => {
-    fetchSubscribers();
-  }, []);
+    const fetchAndSetSubscribers = async () => {
+      try {
+        setLoading(true);
+        progress.start();
+        
+        const response = await fetch("/api/subscribers");
+        progress.set(0.6);
+        
+        const data = await response.json();
+        progress.set(0.9);
+        
+        if (response.ok && data.success && data.subscribers) {
+          const formattedData = getFormattedSubscribers(data.subscribers);
+          setSubscribers(formattedData);
+        } else {
+          toast.error("Failed to fetch subscribers");
+        }
+      } catch (error) {
+        console.error("Error fetching subscribers:", error);
+        toast.error("Error fetching subscribers");
+      } finally {
+        progress.finish();
+        setLoading(false);
+      }
+    };
 
+    fetchAndSetSubscribers();
+  }, []); // Dependency array is empty to run only on mount
   // Filter and search subscribers
   const filteredSubscribers = useMemo(() => {
     return subscribers.filter((subscriber) => {
@@ -612,5 +661,6 @@ const SubscribersPage = () => {
     </div>
   );
 };
+}
 
 export default SubscribersPage; 
