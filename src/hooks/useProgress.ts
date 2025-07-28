@@ -19,7 +19,6 @@ export const useProgress = (): ProgressControls => {
   }, []);
 
   const set = useCallback((progress: number) => {
-    // Ensure progress is between 0 and 1
     const normalizedProgress = Math.max(0, Math.min(1, progress));
     NProgress.set(normalizedProgress);
   }, []);
@@ -55,11 +54,10 @@ export const withProgress = async <T>(
   
   try {
     if (onProgress && steps > 1) {
-      // For multi-step operations
       for (let i = 0; i < steps; i++) {
         const progress = (i + 1) / steps;
         onProgress(progress);
-        NProgress.set(progress * 0.9); // Keep some progress for completion
+        NProgress.set(progress * 0.9);
       }
     }
     
@@ -73,12 +71,18 @@ export const withProgress = async <T>(
 };
 
 // HOC for wrapping components with progress
-export const withProgressBar = function<P extends object>(
-  Component: React.ComponentType<P>
-) {
-  return function(props: P) {
+export const withProgressBar = <P extends object>(
+  WrappedComponent: React.ComponentType<P>
+) => {
+  const WithProgressBar = (props: P) => {
     const progress = useProgress();
     
-    return React.createElement(Component, { ...props, progress });
+    // Using React.createElement to avoid the TSX type error
+    return React.createElement(WrappedComponent, { ...props, progress });
   };
-}; 
+
+  // Set the display name for easier debugging in React DevTools
+  WithProgressBar.displayName = `withProgressBar(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+  
+  return WithProgressBar;
+};

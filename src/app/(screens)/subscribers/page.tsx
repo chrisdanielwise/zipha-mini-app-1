@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { 
-  MdSearch, 
+import { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  MdSearch,
   MdRefresh,
   MdPerson,
   MdEmail,
@@ -41,7 +41,7 @@ interface Subscriber {
 }
 
 const SubscribersPage = () => {
- const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "cancelled" | "expired">("all");
@@ -52,7 +52,7 @@ const SubscribersPage = () => {
   const progress = useProgress();
 
   // Helper function to format the raw subscriber data
-  const getFormattedSubscribers = (rawSubscribers: any): Subscriber[] => {
+  const getFormattedSubscribers = useCallback((rawSubscribers: any): Subscriber[] => {
     return rawSubscribers.map((user: any, index: number) => {
       let amount = "$0"; // Default amount
 
@@ -88,23 +88,27 @@ const SubscribersPage = () => {
       }
 
       return {
-        id: index + 1,
-        name: user.fullName || "No name",
+        _id: user._id || index,
         username: user.username || "No username",
-        amount: amount,
-        service: user.subscription?.type || "None",
-        status: user.subscription?.status || "Unknown",
-        date: user.groupMembership.joinedAt
-          ? new Date(user.groupMembership.joinedAt).toLocaleDateString("en-GB")
-          : "N/A",
-        payment: "Unknown",
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        subscription: {
+            status: user.subscription?.status || "unknown",
+            plan: user.subscription?.type || "None",
+            amount: parseFloat(amount.replace('$', '')),
+            currency: '$',
+        },
+        createdAt: user.groupMembership?.joinedAt
+          ? new Date(user.groupMembership.joinedAt).toISOString()
+          : new Date().toISOString()
       };
     });
-  };
+  }, []);
 
   // Effect to fetch and format subscribers when the component mounts
-  useEffect(() => {
-    const fetchAndSetSubscribers = async () => {
+  const fetchAndSetSubscribers = useCallback(async () => {
       try {
         setLoading(true);
         progress.start();
@@ -128,10 +132,12 @@ const SubscribersPage = () => {
         progress.finish();
         setLoading(false);
       }
-    };
+    }, [progress, getFormattedSubscribers]);
 
+  useEffect(() => {
     fetchAndSetSubscribers();
-  }, []); // Dependency array is empty to run only on mount
+  }, []);
+  
   // Filter and search subscribers
   const filteredSubscribers = useMemo(() => {
     return subscribers.filter((subscriber) => {
@@ -250,8 +256,8 @@ const SubscribersPage = () => {
         break;
       case 'suspend':
         // Toggle account status
-        const newStatus = subscriber.subscription.status === 'active' ? 'suspended' : 'active';
-        toast.success(`Account ${newStatus} for ${subscriber.username}`);
+        // This is a mock implementation. You'd likely make an API call here.
+        toast.success(`Account status toggled for ${subscriber.username}`);
         break;
       case 'delete':
         // Show confirmation then delete
@@ -470,7 +476,7 @@ const SubscribersPage = () => {
               <option value="expired">Expired</option>
             </select>
             <button
-              onClick={fetchSubscribers}
+              onClick={fetchAndSetSubscribers}
               className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             >
               <MdRefresh className="w-4 h-4" />
@@ -661,6 +667,5 @@ const SubscribersPage = () => {
     </div>
   );
 };
-}
 
-export default SubscribersPage; 
+export default SubscribersPage;
