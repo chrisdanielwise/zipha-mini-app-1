@@ -7,10 +7,12 @@ export async function GET() {
     await connectDB();
     
     // Fetch only users with active or pending subscriptions (inside subscription object)
-    const subscribers = await userModel.find({
-      "subscription.status": { $in: ["active", "pending"] }
-    }).sort({ createdAt: -1 }); // Sort by newest first
+    // const subscribers = await userModel.find({
+    //   "subscription.status": { $in: ["active", "pending"] }
+    // }).sort({ createdAt: -1 }); // Sort by newest first
     
+    // Fetch only users with active or pending subscriptions (inside subscription object)
+    const subscribers = await userModel.find().sort({ createdAt: -1 }); // Sort by newest first
     return NextResponse.json({ 
       success: true, 
       subscribers,

@@ -10,7 +10,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { setWebhook } from 'server/bot/config/setWebhook';
-
+ 
 export const metadata = {
   title: 'Your App Title',
   description: 'Your app description', 

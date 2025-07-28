@@ -53,24 +53,68 @@ const Subscribers = () => {
       return null;
     }
   }
+
+  async function getFormattedSubscribers(subscribers:any): Promise<UserData[]> {
+
+  // 3. Map the subscribers and assign the correct amount based on subscription type
+  const formattedSubscribers: UserData[] = subscribers.map((user:any, index:number) => {
+    let amount = "$0"; // Default amount if type is not found or recognized
+
+    // Determine the amount based on the subscription type
+    switch (user.subscription?.type) {
+      case "one_month":
+        amount = `$${63}`; //
+        break;
+      case "three_months":
+        amount = `$${160}`; //
+        break;
+      case "six_months":
+        amount = `$${300}`; //
+        break;
+      case "twelve_months":
+        amount = `$${500}`; //
+        break;
+      case "mentorship_price_list": // As found in menuButtons.ts
+        amount = "$300";
+        break;
+      case "one_on_one_price_list": // As found in menuButtons.ts
+        amount = "$1100";
+        break;
+      case "bootcamp_payment": // As found in menuButtons.ts
+        amount = "$79.99";
+        break;
+      case "$10,000 - $49,000": // As found in menuInfo.ts (service charge for fund management)
+          amount = "$1000";
+          break;
+      // Add more cases for other subscription types if they have fixed amounts
+      default:
+        // For other types (like Fund Management $50,000 - $1 million, which is negotiated),
+        // or unknown types, keep the default or set a specific placeholder.
+        amount = "$0"; 
+        break;
+    }
+
+    return {
+      id: index + 1,
+      name: user.fullName || "No name",
+      username: user.username || "No username",
+      amount: amount,
+      service: user.subscription?.type || "None",
+      status: user.subscription?.status || "Unknown",
+      date: user.groupMembership.joinedAt
+        ? new Date(user.groupMembership.joinedAt).toLocaleDateString("en-GB")
+        : "N/A",
+      payment: "Unknown", // You might fetch real payment methods if available elsewhere
+    };
+  });
+
+  return formattedSubscribers;
+}
   useEffect(() => {
     const fetchSubscribers = async () => {
       const subscribers = await getSubscribers();
       if (!subscribers) return;
-
-      const formatted: UserData[] = subscribers.map((user, index) => ({
-        id: index + 1,
-        name: user.fullName || "No name",
-        username: user.username || "No username",
-        amount: "$0", // or use a real amount if you have it
-        service: user.subscription?.type || "None",
-        status: user.subscription?.status || "Unknown",
-        date: user.createdAt
-          ? new Date(user.createdAt).toLocaleDateString("en-GB")
-          : "N/A",
-        payment: "Unknown", // or use a real payment field if you have it
-      }));
-
+      const formatted = await getFormattedSubscribers(subscribers)
       setData(formatted);
     };
 
