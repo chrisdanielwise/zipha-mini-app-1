@@ -132,11 +132,11 @@ const SubscribersPage = () => {
         progress.finish();
         setLoading(false);
       }
-    }, [progress, getFormattedSubscribers]);
+    }, [getFormattedSubscribers]); // Removed progress from dependencies
 
   useEffect(() => {
     fetchAndSetSubscribers();
-  }, []);
+  }, [fetchAndSetSubscribers]);
   
   // Filter and search subscribers
   const filteredSubscribers = useMemo(() => {

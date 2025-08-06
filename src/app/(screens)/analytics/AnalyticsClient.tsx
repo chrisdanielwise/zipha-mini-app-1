@@ -1,9 +1,10 @@
+"use client";
+
 import React from 'react';
 import WaterDropCard from '../../../components/ui/WaterDropCard';
 import { FaChartBar, FaUsers, FaDollarSign, FaArrowUp } from 'react-icons/fa';
 
-// This is the main server component for the /analytics route
-const AnalyticsPage = () => {
+const AnalyticsClient = () => {
   return (
     <div className="flex flex-col gap-6 mt-4 w-full max-w-7xl mx-auto pb-8 px-4">
       {/* Header */}
@@ -76,4 +77,4 @@ const AnalyticsPage = () => {
   );
 };
 
-export default AnalyticsPage;
+export default AnalyticsClient; 

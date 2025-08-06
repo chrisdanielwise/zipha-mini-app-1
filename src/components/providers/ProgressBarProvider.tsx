@@ -1,118 +1,69 @@
 "use client";
 
-import { useEffect } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import NProgress from 'nprogress';
-import 'nprogress/nprogress.css';
-
-// Configure NProgress
-NProgress.configure({
-  showSpinner: false,
-  speed: 400,
-  minimum: 0.08,
-  easing: 'ease',
-  positionUsing: '',
-  trickleSpeed: 200,
-});
-
-// Custom CSS for the progress bar
-const progressBarStyles = `
-  /* Progress Bar Styles */
-  #nprogress {
-    pointer-events: none;
-  }
-
-  #nprogress .bar {
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
-    position: fixed;
-    z-index: 9999;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    border-radius: 0 0 2px 2px;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-  }
-
-  #nprogress .peg {
-    display: block;
-    position: absolute;
-    right: 0px;
-    width: 100px;
-    height: 100%;
-    box-shadow: 0 0 10px #3b82f6, 0 0 5px #3b82f6;
-    opacity: 1.0;
-    transform: rotate(3deg) translate(0px, -4px);
-  }
-
-  /* Dark mode support */
-  @media (prefers-color-scheme: dark) {
-    #nprogress .bar {
-      background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
-      box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
-    }
-    
-    #nprogress .peg {
-      box-shadow: 0 0 10px #60a5fa, 0 0 5px #60a5fa;
-    }
-  }
-
-  /* Loading animation */
-  @keyframes nprogress-spinner {
-    0%   { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
+import { useEffect, useState } from 'react';
 
 export default function ProgressBarProvider() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Inject custom styles
-    const styleElement = document.createElement('style');
-    styleElement.innerHTML = progressBarStyles;
-    document.head.appendChild(styleElement);
+    // Only run on client side
+    if (typeof window === 'undefined') return;
 
-    return () => {
-      // Cleanup styles on unmount
-      if (document.head.contains(styleElement)) {
-        document.head.removeChild(styleElement);
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      
+      // Only trigger for internal links
+      if (link && link.href && link.href.startsWith(window.location.origin)) {
+        setIsLoading(true);
+        
+        // Complete after a short delay
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 800);
       }
     };
-  }, []);
 
-  useEffect(() => {
-    // Start progress bar
-    NProgress.start();
+    // Listen for custom progress events from useProgress hook
+    const handleShowProgress = () => {
+      setIsLoading(true);
+    };
+
+    const handleHideProgress = () => {
+      setIsLoading(false);
+    };
+
+    // Listen for click events on links
+    document.addEventListener('click', handleLinkClick);
     
-    // Complete progress bar after a short delay to show the animation
-    const timer = setTimeout(() => {
-      NProgress.done();
-    }, 100);
+    // Listen for custom progress events
+    window.addEventListener('showProgress', handleShowProgress);
+    window.addEventListener('hideProgress', handleHideProgress);
 
     return () => {
-      clearTimeout(timer);
-      NProgress.done();
-    };
-  }, [pathname, searchParams]);
-
-  // Handle manual progress control for forms and API calls
-  useEffect(() => {
-    // Add global functions to control progress bar
-    (window as any).startProgress = () => NProgress.start();
-    (window as any).finishProgress = () => NProgress.done();
-    (window as any).setProgress = (progress: number) => NProgress.set(progress);
-    (window as any).incrementProgress = (amount?: number) => NProgress.inc(amount);
-
-    return () => {
-      // Cleanup global functions
-      delete (window as any).startProgress;
-      delete (window as any).finishProgress;
-      delete (window as any).setProgress;
-      delete (window as any).incrementProgress;
+      document.removeEventListener('click', handleLinkClick);
+      window.removeEventListener('showProgress', handleShowProgress);
+      window.removeEventListener('hideProgress', handleHideProgress);
     };
   }, []);
 
-  return null;
+  if (!isLoading) return null;
+
+  return (
+    <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 z-[9999]">
+      <div 
+        className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-800 ease-out"
+        style={{
+          width: '100%',
+          animation: 'progress 1.5s ease-in-out infinite'
+        }}
+      />
+      <style jsx>{`
+        @keyframes progress {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
+    </div>
+  );
 } 

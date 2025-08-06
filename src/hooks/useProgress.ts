@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import NProgress from 'nprogress';
 
 export interface ProgressControls {
   start: () => void;
@@ -11,24 +10,36 @@ export interface ProgressControls {
 
 export const useProgress = (): ProgressControls => {
   const start = useCallback(() => {
-    NProgress.start();
+    // Trigger progress bar by dispatching a custom event
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('showProgress'));
+    }
   }, []);
 
   const finish = useCallback(() => {
-    NProgress.done();
+    // Hide progress bar by dispatching a custom event
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hideProgress'));
+    }
   }, []);
 
   const set = useCallback((progress: number) => {
-    const normalizedProgress = Math.max(0, Math.min(1, progress));
-    NProgress.set(normalizedProgress);
-  }, []);
+    // For now, just show/hide based on progress
+    if (progress >= 1) {
+      finish();
+    } else if (progress > 0) {
+      start();
+    }
+  }, [start, finish]);
 
   const increment = useCallback((amount?: number) => {
-    NProgress.inc(amount);
-  }, []);
+    // For simplicity, just show progress
+    start();
+  }, [start]);
 
   const isStarted = useCallback(() => {
-    return NProgress.isStarted();
+    // Check if progress bar is currently showing
+    return false; // We'll implement this if needed
   }, []);
 
   return {
@@ -50,22 +61,32 @@ export const withProgress = async <T>(
 ): Promise<T> => {
   const { onProgress, steps = 1 } = options || {};
   
-  NProgress.start();
+  // Show progress
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('showProgress'));
+  }
   
   try {
     if (onProgress && steps > 1) {
       for (let i = 0; i < steps; i++) {
         const progress = (i + 1) / steps;
         onProgress(progress);
-        NProgress.set(progress * 0.9);
       }
     }
     
     const result = await asyncFn();
-    NProgress.done();
+    
+    // Hide progress
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hideProgress'));
+    }
+    
     return result;
   } catch (error) {
-    NProgress.done();
+    // Hide progress on error
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hideProgress'));
+    }
     throw error;
   }
 };

@@ -41,7 +41,7 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
   };
 
   return (
-    <header className="fixed top-0 w-full h-16 bg-white/95 dark:bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between px-4 md:px-6 z-50">
+    <header className="fixed top-0 w-full h-16 bg-white/95 dark:bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between px-4 md:px-6 z-50 overflow-visible">
       {/* Left side - Logo and mobile menu */}
       <div className="flex items-center gap-3">
         {/* Mobile menu button - only on mobile */}
@@ -62,19 +62,19 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition flex items-center justify-center"
           aria-label="Toggle theme"
         >
           {isDark ? (
-            <FaSun className="text-lg sm:text-xl text-yellow-500" />
+            <FaSun className="text-lg text-yellow-500" />
           ) : (
-            <FaMoon className="text-lg sm:text-xl text-gray-700" />
+            <FaMoon className="text-lg text-gray-700" />
           )}
         </button>
 
         {/* Notifications */}
-        <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-          <FaBell className="text-lg sm:text-xl text-gray-700 dark:text-gray-300" />
+        <button className="relative p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition flex items-center justify-center">
+          <FaBell className="text-lg text-gray-700 dark:text-gray-300" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
@@ -92,7 +92,7 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
 
         {/* User Profile */}
         <div className="relative group">
-          <button className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg hover:shadow-xl transition">
+          <button className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg hover:shadow-xl transition flex-shrink-0">
             <span className="text-sm sm:text-lg font-bold text-white">U</span>
           </button>
           <div className="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
